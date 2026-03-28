@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalentAI MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #FF6B6B;
+    --yellow: #FFE66D;
+    --blue: #4ECDC4;
+    --purple: #A855F7;
+    --dark: #1A1A2E;
+    --pink: #FF9F9F;
+    --green: #06D6A0;
+    --white: #FFFFFF;
+    --offwhite: #F8F9FF;
+    --text: #1A1A2E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--offwhite);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* SPA View Logic */
+  .view-section { display: none; }
+  .view-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 48px;
+    background: white;
+    border-bottom: 2px solid #F0F0F8;
+  }
+  .logo {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 24px;
+    color: var(--coral);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .logo-bubble {
+    background: var(--yellow);
+    border-radius: 10px;
+    padding: 2px 10px;
+    color: var(--dark);
+    font-size: 18px;
+  }
+  nav ul { list-style: none; display: flex; gap: 8px; }
+  nav ul a {
+    text-decoration: none;
+    color: #666;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: .2s;
+    cursor: pointer;
+  }
+  nav ul a:hover { background: var(--offwhite); color: var(--coral); }
+  .nav-pill-lang {
+    background: var(--yellow);
+    color: var(--dark);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    margin-right: 8px;
+    transition: .2s;
+  }
+  .nav-pill-lang:hover { transform: scale(1.05); }
+  .nav-cta {
+    background: var(--coral);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-cta:hover { transform: scale(1.05); }
+
+  /* Forms & Dashboards matching the nice cards */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .glass-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    border: 2px solid #F0F0F8;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+  }
+  .form-group { margin-bottom: 20px; }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 700;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    color: var(--dark);
+    font-size: 15px;
+    outline: none;
+    transition: .2s;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--coral); }
+  
+  .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .checkbox-group input[type="checkbox"] { width: auto; accent-color: var(--coral); transform: scale(1.3); }
+  .checkbox-group label { margin-bottom: 0; color: var(--text); }
+  
+  .btn, .big-btn {
+    background: var(--coral);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 6px 0 #d94f4f;
+    transition: .15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn:hover, .big-btn:hover { transform: translateY(4px); box-shadow: 0 2px 0 #d94f4f; }
+  
+  .btn-outline {
+    background: white;
+    color: var(--dark);
+    border: 2px solid #eee;
+    box-shadow: none;
+  }
+  .btn-outline:hover { background: var(--offwhite); transform: translateY(0); border-color: var(--coral); }
+
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; }
+  @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr; } }
+  
+  .auth-forms { max-width: 440px; margin: 40px auto; }
+  .tabs { display: flex; margin-bottom: 2rem; border-bottom: 2px solid #eee; gap:16px; }
+  .tab { padding: 8px 16px; cursor: pointer; color: #999; font-weight: 700; font-size: 15px; transition: .2s; border-bottom: 3px solid transparent; margin-bottom:-2px; }
+  .tab.active { color: var(--coral); border-bottom-color: var(--coral); }
+
+  /* HERO from design */
+  .hero {
+    padding: 72px 56px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: end;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .hero-text { padding-bottom: 48px; }
+  .emoji-title {
+    font-size: 18px;
+    background: var(--yellow);
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--dark);
+  }
+  .hero h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 58px;
+    line-height: 1.1;
+    color: var(--dark);
+    margin-bottom: 20px;
+  }
+  .hero h1 .squiggle { position: relative; color: var(--coral); }
+  .hero h1 .squiggle::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 6px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10'%3E%3Cpath d='M0,5 Q12.5,0 25,5 Q37.5,10 50,5 Q62.5,0 75,5 Q87.5,10 100,5' fill='none' stroke='%23FFE66D' stroke-width='3'/%3E%3C/svg%3E") repeat-x;
+    background-size: 60px 6px;
+  }
+  .hero p {
+    font-size: 18px;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 440px;
+  }
+  .hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  
+  .big-btn-alt {
+    background: var(--yellow);
+    color: var(--dark);
+    padding: 12px 24px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 6px 0 #e5c200;
+    transition: .15s;
+    border: none;
+    cursor: pointer;
+  }
+  .big-btn-alt:hover { transform: translateY(4px); box-shadow: 0 2px 0 #e5c200; }
+
+  /* Desktop Mockup */
+  .hero-visual { display: flex; justify-content: center; position: relative; margin-top: 20px; }
+  .desktop-wrap {
+    background: #E5E7EB; border-radius: 12px 12px 0 0; padding: 0; width: 480px;
+    box-shadow: 0 30px 80px rgba(26,26,46,0.3), 0 0 0 1px rgba(0,0,0,0.05); position: relative; z-index: 5;
+  }
+  .desktop-top-bar { background: #F3F4F6; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 12px 12px 0 0; border-bottom: 1px solid #E5E7EB; }
+  .desktop-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dd-red { background: #FF5F56; } .dd-yellow { background: #FFBD2E; } .dd-green { background: #27C93F; }
+  .desktop-screen { background: white; overflow: hidden; height: 320px; border-radius: 0 0 0 0; background: #F8F9FF; display: flex; flex-direction: column; }
+  .desktop-header { background: white; padding: 16px 20px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; color: var(--dark); }
+  .desktop-header-badge { background: #E0FAF5; color: #06D6A0; font-size: 11px; padding: 4px 10px; border-radius: 10px; }
+  .desktop-body { padding: 20px; flex: 1; overflow: hidden; }
+  .desktop-search { background: white; border: 1.5px solid #eee; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #999; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+  .desktop-jobs { display: flex; flex-direction: column; gap: 12px; }
+  .desktop-job { background: white; border: 1.5px solid #eee; border-radius: 12px; padding: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+  .dj-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .dj-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .dj-ico-1 { background: #FFF4E5; } .dj-ico-2 { background: #E8F5E9; }
+  .dj-title { font-weight: 800; font-size: 14px; color: var(--dark); margin-bottom: 2px; }
+  .dj-co { font-size: 11px; color: #999; }
+  .dj-match { font-size: 11px; color: white; background: var(--coral); padding: 4px 12px; border-radius: 20px; font-weight: 800; margin-left: auto; box-shadow: 0 2px 0 #d94f4f; }
+  .dj-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-left: 50px; }
+  .dj-tag { font-size: 10px; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+  .dj-tag-a { background: #FFF4E5; color: #e06000; } .dj-tag-b { background: #E8F5E9; color: #1b8c4f; } .dj-tag-c { background: #EDE7F6; color: #7b1fa2; }
+  .desktop-base { background: #D1D5DB; height: 12px; border-radius: 0 0 16px 16px; display: flex; justify-content: center; }
+  .desktop-stand { width: 100px; height: 20px; background: #9CA3AF; margin: 0 auto; clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%); }
+  .desktop-foot { width: 160px; height: 8px; background: #D1D5DB; margin: 0 auto; border-radius: 4px 4px 0 0; }
+
+  /* Unique Hovering Features */
+  .feature-badge {
+    position: absolute; background: white; border-radius: 16px; padding: 12px 20px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.1); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px;
+    white-space: nowrap; animation: float-feature 3s ease-in-out infinite; z-index: 10;
+    display: flex; align-items: center; gap: 8px; border: 2px solid #F0F0F8;
+  }
+  .feature-badge .feat-icon {
+    width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  @keyframes float-feature { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fb-1 { top: 40px; left: -80px; color: var(--dark); animation-delay: 0s; border-color: #E0FAF5; }
+  .fb-1 .feat-icon { background: #E0FAF5; }
+  .fb-2 { top: 180px; right: -90px; color: var(--dark); animation-delay: .8s; border-color: #EDE7F6; }
+  .fb-2 .feat-icon { background: #EDE7F6; }
+  .fb-3 { bottom: 80px; left: -100px; color: var(--dark); animation-delay: 1.5s; border-color: #FFF4E5; }
+  .fb-3 .feat-icon { background: #FFF4E5; }
+
+  /* HOW IT WORKS */
+  .how { padding: 80px 56px; background: white; border-radius: 40px; margin: 40px 20px; }
+  .how-header { text-align: center; margin-bottom: 56px; }
+  .how-header h2 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 42px; color: var(--dark); }
+  .how-header p { color: #888; font-size: 16px; margin-top: 8px; }
+  .how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 960px; margin: 0 auto; }
+  .how-step { text-align: center; padding: 28px 20px; background: var(--offwhite); border-radius: 20px; border: 2px solid transparent; transition: .3s; position: relative; }
+  .how-step:hover { border-color: var(--coral); background: white; }
+  .how-step:not(:last-child)::after { content: '→'; position: absolute; right: -16px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #ccc; z-index: 2; }
+  .step-circle { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px; }
+  .sc-1 { background: #FFE8E8; } .sc-2 { background: #FFF9D9; } .sc-3 { background: #E0FAF5; } .sc-4 { background: #EDE7F6; }
+  .how-step h3 { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; margin-bottom: 8px; }
+  .how-step p { font-size: 13px; color: #888; line-height: 1.5; }
+
+  /* CTA BANNER */
+  .cta-banner { margin: 80px 20px; background: var(--dark); border-radius: 28px; padding: 56px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; position: relative; }
+  .cta-banner::before { content: '🚀'; position: absolute; font-size: 160px; right: 80px; top: -20px; opacity: 0.15; transform: rotate(20deg); }
+  .cta-banner h2 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 38px; color: white; max-width: 480px; line-height: 1.2; }
+  .cta-banner h2 span { color: var(--yellow); }
+  .cta-btns { display: flex; gap: 14px; flex-direction: column; align-items: flex-start; }
+
+  /* JOB CARDS logic generated */
+  .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .job-card { background: white; border-radius: 20px; padding: 24px; border: 2px solid #F0F0F8; transition: .3s; }
+  .job-card:hover { border-color: var(--coral); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(255,107,107,0.1); }
+  .jc-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .jc-logo { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  .jcl-1 { background: #FFF4E5; } .jcl-2 { background: #E8F5E9; } .jcl-3 { background: #E3F2FD; }
+  .jc-info h3 { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; margin-bottom: 3px; }
+  .jc-info span { font-size: 13px; color: #999; }
+  .jc-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .jc-apply { background: var(--coral); color: white; border: none; padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 0 #d94f4f; transition: .15s; font-family: 'Nunito Sans', sans-serif; }
+  .jc-apply:hover { transform: translateY(2px); box-shadow: 0 2px 0 #d94f4f; }
+
+  /* Remove conflicting old rules */
+  .walk-in-badge { display:none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" onclick="homeClick()"><span class="logo-bubble">T</span> TalentAI</a>
+  
+  <div id="public-nav" style="display: block;">
+      <ul>
+        <li><a onclick="showSection('landing-page')">About</a></li>
+        <li><a onclick="showSection('auth-section')">Log in</a></li>
+      </ul>
+      <button class="nav-cta" style="margin-left: 16px;" onclick="showSection('auth-section'); switchAuthTab('register');">🚀 Get Started</button>
+  </div>
+
+  <div id="user-controls" style="display: none; align-items: center;">
+      <ul>
+          <li><a onclick="showSection('landing-page')">Home</a></li>
+          <li><a onclick="showSection('home-feed'); loadFeed();">Feed</a></li>
+          <li><a id="nav-dashboard" onclick="showDashboard()">Dashboard</a></li>
+      </ul>
+      <span id="welcome-msg" onclick="showProfile()" style="margin: 0 16px; color: var(--dark); font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; text-decoration:underline dotted var(--coral); text-underline-offset:3px; transition:.2s;" title="View my profile"></span>
+      <button class="nav-pill-lang" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- 1. Landing Page -->
+<main id="landing-page" class="view-section active">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-text">
+        <div class="emoji-title">🎯 AI-Powered Local Hiring</div>
+        <h1>Find Great<br>Staff <span class="squiggle">Nearby</span></h1>
+        <p>Post jobs, screen candidates automatically, and hire the best people for your hotel, shop, or business — all in one place.</p>
+        <div class="hero-actions">
+          <button class="btn" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #d94f4f;" onclick="showSection('auth-section')">🔍 Find Jobs Near Me</button>
+          <button class="big-btn-alt" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #e5c200;" onclick="showSection('auth-section')">📋 Post a Job</button>
+        </div>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="feature-badge fb-1">
+          <div class="feat-icon">🎯</div>
+          <div>Instant AI Matching</div>
+        </div>
+        <div class="feature-badge fb-2">
+          <div class="feat-icon">📍</div>
+          <div>Local Pincode Hiring</div>
+        </div>
+        <div class="feature-badge fb-3">
+          <div class="feat-icon">⚡</div>
+          <div>Zero Manual Screening</div>
+        </div>
+        <div class="desktop-container" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="desktop-wrap">
+            <div class="desktop-top-bar">
+              <div class="desktop-dot dd-red"></div>
+              <div class="desktop-dot dd-yellow"></div>
+              <div class="desktop-dot dd-green"></div>
+            </div>
+            <div class="desktop-screen">
+              <div class="desktop-header">
+                🎯 AI Matcher Dashboard
+                <div class="desktop-header-badge">Live Updates</div>
+              </div>
+              <div class="desktop-body">
+                <div class="desktop-search">🔍 Auto-fetching latest candidates nearby...</div>
+                <div class="desktop-jobs">
+                  <div class="desktop-job">
+                    <div class="dj-top">
+                      <div class="dj-ico dj-ico-1">🏨</div>
+                      <div>
+                        <div class="dj-title">Ravi Kumar</div>
+                        <div class="dj-co">Front Desk Exp: 2yrs</div>
+                      </div>
+                      <div class="dj-match">92% Match</div>
+                    </div>
+                    <div class="dj-tags">
+                      <span class="dj-tag dj-tag-a">Fits Salary</span>
+                      <span class="dj-tag dj-tag-b">Local</span>
+                    </div>
+                  </div>
+                  <div class="desktop-job">
+                    <div class="dj-top">
+                      <div class="dj-ico dj-ico-2">🛒</div>
+                      <div>
+                        <div class="dj-title">Sneha Verma</div>
+                        <div class="dj-co">Retail & Sales</div>
+                      </div>
+                      <div class="dj-match" style="background:var(--green); box-shadow: 0 2px 0 #04b385;">85% Match</div>
+                    </div>
+                    <div class="dj-tags">
+                      <span class="dj-tag dj-tag-c">Walk-in Ready</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="desktop-base"></div>
+          </div>
+          <div class="desktop-stand"></div>
+          <div class="desktop-foot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <section class="how">
+      <div class="how-header">
+        <h2>How does it work? 🤔</h2>
+        <p>Mathematical matching system removes completely the need for manual screening.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-circle sc-1">👤</div>
+          <h3>Create Profile</h3>
+          <p>Candidates add their skills and pincode. Employers post their requirements.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-2">🔍</div>
+          <h3>AI Matching</h3>
+          <p>Our algorithm instantly calculates compatibility between skills and requirements.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-3">🤖</div>
+          <h3>Ranked Results</h3>
+          <p>Employers see a neatly ranked list of best matches - skip the bad CVs entirely.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-4">🎉</div>
+          <h3>Hire Fast</h3>
+          <p>Shortlist candidates with one click. Everything moves blazingly fast.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-banner">
+      <h2>Ready to hire your <span>dream team</span>?</h2>
+      <div class="cta-btns">
+        <button class="nav-cta" style="padding:14px 32px; font-size:16px;" onclick="showSection('auth-section'); switchAuthTab('register');">🚀 Get Started Free</button>
+      </div>
+    </div>
+</main>
+
+<!-- 2. Auth Section -->
+<main id="auth-section" class="view-section">
+    <div style="height:40px;"></div>
+    <div class="glass-card auth-forms">
+        <div style="text-align:center; margin-bottom:24px;">
+            <h2 style="font-family:'Nunito',sans-serif; font-weight:900; color:var(--dark);">Welcome to TalentAI 👋</h2>
+            <p style="color:#666; font-size:14px; margin-top:4px;">Log in or create a new account to continue.</p>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchAuthTab('login')" style="flex:1; text-align:center;">Login</div>
+            <div class="tab" onclick="switchAuthTab('register')" style="flex:1; text-align:center;">Register</div>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="l-username" required placeholder="e.g. aditya">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="l-password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">⚡ Login Securely</button>
+        </form>
+
+        <form id="register-form" style="display: none;">
+            <div class="form-group">
+                <label>I am a...</label>
+                <select id="r-role">
+                    <option value="candidate">👩‍💼 Candidate (Looking for Jobs)</option>
+                    <option value="employer">🏢 Employer (Hiring Staff)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="r-username" required placeholder="Choose a username">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="r-email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="r-password" required placeholder="Create a strong password">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">🎉 Create Account</button>
+        </form>
+    </div>
+</main>
+
+<!-- 3. Home Feed (For Both) -->
+<main id="home-feed" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:16px;">🔥 Global Jobs Feed</h2>
+        <div class="tabs" id="feed-tabs" style="display:none; margin-bottom: 24px;">
+            <div class="tab active" id="tab-all-jobs" onclick="switchFeedTab('all')" style="flex:1; text-align:center;">🌐 All Jobs</div>
+            <div class="tab" id="tab-recommended" onclick="switchFeedTab('recommended')" style="flex:1; text-align:center;">⭐ Recommended</div>
+        </div>
+        <div id="all-jobs-feed" style="display:flex; flex-direction:column; gap:16px;">
+            <!-- Feed generated here -->
+        </div>
+    </div>
+</main>
+
+<!-- 4. Candidate Dashboard -->
+<main id="candidate-dashboard" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">📋 My Applications</h2>
+
+        <!-- Stat card -->
+        <div style="display: flex; gap: 16px; margin-bottom: 28px; justify-content: center;">
+            <div class="glass-card" style="min-width: 180px; text-align: center; padding: 20px 32px;">
+                <h3 style="font-size: 13px; color: #999; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;">Jobs Applied</h3>
+                <p id="c-stat-applied" style="font-size: 40px; font-weight: 900; color: var(--purple); margin: 0; font-family:'Nunito',sans-serif;">0</p>
+            </div>
+        </div>
+
+        <!-- Applied Jobs List -->
+        <div class="glass-card">
+            <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin-bottom:20px;">🗂️ All Applied Jobs</h3>
+            <div id="applied-jobs-list">
+                <p style="color:#666; text-align:center; padding: 24px 0;">Loading your applications...</p>
+            </div>
+        </div>
+        </div>
+    </div>
+</main>
+
+<!-- 4.1 Candidate Profile Section -->
+<main id="candidate-profile" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">👤 My Profile</h2>
+        
+        <div class="glass-card">
+            <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin-bottom:20px;">Profile Information</h3>
+            <form id="candidate-profile-form">
+                <div class="form-group">
+                    <label>Skills (Comma separated)</label>
+                    <input type="text" id="c-skills" placeholder="e.g. Python, Django, React" required>
+                </div>
+                <div class="form-group">
+                    <label>Years of Experience</label>
+                    <input type="number" id="c-experience" min="0" placeholder="e.g. 2" required>
+                </div>
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" id="c-pincode" placeholder="e.g. 226001" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number (for employers to contact you)</label>
+                    <input type="text" id="c-phone" placeholder="e.g. +91 9876543210">
+                </div>
+                <div class="form-group">
+                    <label>Contact Email (for employers to contact you)</label>
+                    <input type="email" id="c-contact-email" placeholder="e.g. candidate@email.com">
+                </div>
+                <button type="submit" class="btn">💾 Save Profile</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- 4a. Candidate Matched Jobs View -->
+<main id="candidate-matched-jobs" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <button class="btn btn-outline" onclick="showSection('candidate-dashboard')" style="margin-bottom: 24px;">&larr; Back to Profile</button>
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:8px;">🎯 My Highly Matched Jobs</h2>
+        <p style="color: #666; margin-bottom: 32px;">Jobs automatically ranked by our algorithm for your exact skill stack.</p>
+        <div id="matched-jobs-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+    </div>
+</main>
+
+<!-- 5. Employer Dashboard -->
+<main id="employer-dashboard" class="view-section">
+    <div class="container">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:16px;">🏢 Employer Dashboard</h2>
+        
+        <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+            <div class="glass-card" style="flex: 1; text-align: center; padding: 16px;">
+                <h3 style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Jobs Posted</h3>
+                <p id="e-stat-jobs" style="font-size: 28px; font-weight: 900; color: var(--purple); margin: 0;">0</p>
+            </div>
+            <div class="glass-card" style="flex: 1; text-align: center; padding: 16px;">
+                <h3 style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Applicants</h3>
+                <p id="e-stat-applicants" style="font-size: 28px; font-weight: 900; color: var(--purple); margin: 0;">0</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div>
+                <div class="glass-card">
+                    <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">Post New Job</h3>
+                    <form id="post-job-form">
+                        <div class="form-group">
+                            <label>Job Title</label>
+                            <input type="text" id="j-title" required placeholder="e.g. Front Desk Executive">
+                        </div>
+                        <div class="form-group">
+                            <label>Required Skills For Rank Matching</label>
+                            <textarea id="j-skills" rows="2" required placeholder="Communication, English, Computer Basic"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Job Site Pincode</label>
+                            <input type="text" id="j-pincode" required placeholder="e.g. 226001">
+                        </div>
+                        <div class="form-group">
+                            <label>Monthly Salary (₹ INR)</label>
+                            <input type="number" id="j-salary" min="0" step="1" placeholder="e.g. 15000" required>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="j-walk-in" onchange="document.getElementById('j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
+                            <label for="j-walk-in">🚶 This is a Walk-In job</label>
+                        </div>
+                        <div class="form-group" id="j-walk-in-addr-group" style="display: none;">
+                            <label>Walk-In Address</label>
+                            <textarea id="j-walk-in-address" rows="2" placeholder="e.g. 123, MG Road, Bangalore - 560001"></textarea>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">🚀 Post Job to Global Feed</button>
+                    </form>
+                </div>
+            </div>
+            <div>
+                <div class="glass-card">
+                    <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">My Posted Jobs</h3>
+                    <div id="posted-jobs-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 5.1 Employer Profile Section -->
+<main id="employer-profile-view" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">🏢 Company Profile</h2>
+        <div class="glass-card">
+            <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">Company Details</h3>
+            <form id="employer-profile-form">
+                <div class="form-group">
+                    <label>Company Name / Store Name</label>
+                    <input type="text" id="e-company" placeholder="e.g. Sunrise Hotel">
+                </div>
+                <div class="form-group">
+                    <label>Company Pincode</label>
+                    <input type="text" id="e-pincode" placeholder="e.g. 226001">
+                </div>
+                <div class="form-group">
+                    <label>HR Name (Visible only to applied candidates)</label>
+                    <input type="text" id="e-contact-name" placeholder="e.g. John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Contact Number (Visible only to applied candidates)</label>
+                    <input type="text" id="e-contact-phone" placeholder="e.g. +91 9876543210">
+                </div>
+                <div class="form-group">
+                    <label>HR Email (Visible only to applied candidates)</label>
+                    <input type="email" id="e-contact-email" placeholder="e.g. hr@company.com">
+                </div>
+                <button type="submit" class="btn">💾 Save Profile</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- 6. Ranked Candidates View (Employer Sub-view) -->
+<main id="ranked-candidates" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <button class="btn btn-outline" onclick="showDashboard()" style="margin-bottom: 24px;">&larr; Back to Dashboard</button>
+        <h3 id="rc-job-title" style="font-family:'Nunito',sans-serif; font-weight:900; font-size:28px; margin-bottom:12px;">Candidates</h3>
+        
+        <div class="tabs" id="employer-candidate-tabs" style="margin-bottom: 24px;">
+            <div class="tab active" id="tab-recommended-candidates" onclick="switchCandidateTab('recommended')" style="flex:1; text-align:center;">⭐ Recommended</div>
+            <div class="tab" id="tab-all-candidates" onclick="switchCandidateTab('all')" style="flex:1; text-align:center;">👥 All Applicants</div>
+        </div>
+
+        <p style="color:#666; margin-bottom:24px;">These candidates are mathematically ranked by match score. You can safely skip reading unmatching CVs entirely!</p>
+        <div id="candidates-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+    </div>
+</main>
+
+<!-- Modals -->
+<div id="edit-job-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:480px; position:relative; margin: 1rem; border:none;">
+        <button onclick="closeEditModal()" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">✏️ Edit Job</h3>
+        <form id="edit-job-form">
+            <div class="form-group">
+                <label>Job Title</label>
+                <input type="text" id="edit-j-title" required>
+            </div>
+            <div class="form-group">
+                <label>Required Skills</label>
+                <textarea id="edit-j-skills" rows="2" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Job Pincode</label>
+                <input type="text" id="edit-j-pincode" required>
+            </div>
+            <div class="form-group">
+                <label>Monthly Salary (₹ INR)</label>
+                <input type="number" id="edit-j-salary" min="0" step="1" required>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="edit-j-walk-in" onchange="document.getElementById('edit-j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
+                <label for="edit-j-walk-in">🚶 Walk-In job</label>
+            </div>
+            <div class="form-group" id="edit-j-walk-in-addr-group" style="display: none;">
+                <label>Walk-In Address</label>
+                <textarea id="edit-j-walk-in-address" rows="2"></textarea>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:24px;">
+                <button type="submit" class="btn" style="flex:1;">Save</button>
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="ai-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:80vh; overflow-y:auto; border:none; border-top: 8px solid var(--purple);">
+        <button onclick="document.getElementById('ai-modal').style.display='none'" style="position:absolute; top:20px; right:20px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 id="ai-modal-title" style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:900; font-size:24px; color:var(--dark);">🤖 AI Assistant</h3>
+        <div id="ai-modal-content">
+            <div style="text-align:center; padding: 2rem;">
+                <div style="display:inline-block; border: 4px solid #f0f0f8; border-top: 4px solid var(--purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 1rem; color: #666; font-weight:700;">Wait for a moment...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+        // Utilities
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            };
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+            
+            const res = await fetch(`/api/${endpoint}`, options);
+            if (!res.ok) {
+                const err = await res.json().catch(()=>({error: 'API Error'}));
+                throw err;
+            }
+            return await res.json();
+        }
+
+        // View changing
+        function showSection(id) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function switchAuthTab(type) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs[0].classList.toggle('active', type === 'login');
+            tabs[1].classList.toggle('active', type === 'register');
+            document.getElementById('login-form').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('register-form').style.display = type === 'register' ? 'block' : 'none';
+        }
+
+        // State control
+        let currentUserRole = null;
+        let currentEmployerProfileId = null;
+        let authCheckDone = false;
+
+        function homeClick() {
+            if (currentUserRole) {
+                showSection('home-feed');
+                loadFeed();
+            } else {
+                showSection('landing-page');
+            }
+        }
+
+        async function checkAuthAndInit() {
+            try {
+                // Cache busting with timestamp
+                const res = await fetch(`/api/whoami?t=${Date.now()}`, { credentials: 'same-origin' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.role && data.username) {
+                        // Pass false to initAppFlow to prevent auto-redirect to feed on load
+                        initAppFlow(data.role, data.username, null, false);
+                        authCheckDone = true;
+                        return;
+                    }
+                }
+            } catch(e) {}
+
+            // Not logged in — show landing page
+            document.getElementById('public-nav').style.display = 'block';
+            document.getElementById('user-controls').style.display = 'none';
+            showSection('landing-page');
+            authCheckDone = true;
+        }
+
+        async function logout() {
+            try { 
+                await apiCall('logout', 'POST'); 
+            } catch(e) { 
+                console.warn('Server logout failed, clearing local state anyway'); 
+            }
+            currentUserRole = null;
+            // Clear all cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            // Redirect to landing page and force reload to clear app state
+            window.location.href = '/';
+        }
+
+        function initAppFlow(role, username, redirectTarget = 'home-feed', doRedirect = true) {
+            currentUserRole = role;
+            document.getElementById('public-nav').style.display = 'none';
+            document.getElementById('user-controls').style.display = 'flex';
+            document.getElementById('welcome-msg').innerText = `Hello, ${username}`;
+            
+            // If employer, load profile ID for ownership checks
+            if (role === 'employer') {
+                apiCall('employer/profile').then(p => {
+                    currentEmployerProfileId = p.id || null;
+                }).catch(() => {});
+            }
+
+            if (!doRedirect) return;
+
+            if (redirectTarget === 'profile') {
+                showProfile();
+            } else {
+                showSection('home-feed');
+                loadFeed();
+            }
+        }
+
+        function showDashboard() {
+            if (currentUserRole === 'candidate') {
+                showSection('candidate-dashboard');
+                loadCandidateData();
+            } else if (currentUserRole === 'employer') {
+                showSection('employer-dashboard');
+                loadEmployerData();
+            }
+        }
+
+        function showProfile() {
+            if (currentUserRole === 'candidate') {
+                showSection('candidate-profile');
+                loadCandidateData();
+            } else if (currentUserRole === 'employer') {
+                showSection('employer-profile-view');
+                loadEmployerData();
+            }
+        }
+
+        // FEED LOGIC
+        let cachedJobsFeed = [];
+        let currentFeedTab = 'all';
+
+        function switchFeedTab(tab) {
+            currentFeedTab = tab;
+            document.getElementById('tab-all-jobs').classList.toggle('active', tab === 'all');
+            document.getElementById('tab-recommended').classList.toggle('active', tab === 'recommended');
+            renderFeed();
+        }
+
+        async function loadFeed() {
+            try {
+                if (currentUserRole === 'candidate') {
+                    const prof = await apiCall('candidate/profile').catch(() => null);
+                    if (!prof || !prof.skills) {
+                        alert('You must save your profile details first before viewing the feed!');
+                        showSection('candidate-dashboard');
+                        loadCandidateData();
+                        return;
+                    }
+                    window.currentCandidateSkills = prof.skills;
+                    document.getElementById('feed-tabs').style.display = 'flex';
+                } else if (currentUserRole === 'employer') {
+                    const prof = await apiCall('employer/profile').catch(() => null);
+                    if (!prof || !prof.company_name) {
+                        alert('You must save your company details first before viewing the feed!');
+                        showSection('employer-dashboard');
+                        loadEmployerData();
+                        return;
+                    }
+                    window.currentEmployerProfileId = prof.id;
+                    document.getElementById('feed-tabs').style.display = 'none';
+                } else {
+                    document.getElementById('feed-tabs').style.display = 'none';
+                }
+
+                cachedJobsFeed = await apiCall('jobs/feed');
+                renderFeed();
+            } catch(e) { console.error('Error loading feed', e); }
+        }
+
+        function renderFeed() {
+            const list = document.getElementById('all-jobs-feed');
+            list.innerHTML = '';
+            
+            let jobsToRender = cachedJobsFeed;
+            if (currentUserRole === 'candidate' && currentFeedTab === 'recommended') {
+                const cSkills = window.currentCandidateSkills.toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+                jobsToRender = cachedJobsFeed.filter(j => {
+                    const jSkills = (j.required_skills || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+                    return cSkills.some(cs => jSkills.includes(cs));
+                });
+            }
+
+            if(jobsToRender.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color: #666;">No jobs found in this category.</p>';
+                return;
+            }
+            
+            jobsToRender.forEach(j => {
+                const applyBtnHtml = currentUserRole === 'candidate' 
+                    ? `<button class="jc-apply" onclick="applyJob(${j.id})">Apply to Job</button>` 
+                    : '';
+                const salaryStr = j.salary ? `₹${Number(j.salary).toLocaleString('en-IN')}/month` : 'N/A';
+                const aiSalaryHtml = currentUserRole === 'candidate' && j.salary ? 
+                    `<button class="jc-apply" style="background:var(--yellow); color:var(--dark);" onclick="checkSalary(${j.id})">✨ Assess Salary</button>` : '';
+                
+                list.innerHTML += `
+                    <div class="job-card">
+                        <div class="jc-top">
+                            <div class="jc-logo jcl-1">💼</div>
+                            <div class="jc-info">
+                                <h3 style="margin-bottom:4px;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;">${j.title}</h3>
+                                <span style="font-size:13px;color:#999;">${j.company_name || 'N/A'} • Pin: ${j.pincode}</span>
+                            </div>
+                        </div>
+                        <div class="jc-tags" style="margin-bottom:12px;">
+                            <span class="pj-tag pj-tag-a">💰 ${salaryStr}</span>
+                            ${j.is_walk_in ? '<span class="pj-tag pj-tag-b">🚶 Walk-In</span>' : ''}
+                        </div>
+                        <div style="font-size:13px; color:#666; margin-bottom:12px; padding:10px; background:var(--offwhite); border-radius:12px;">
+                            <strong>Skills Needed:</strong> ${j.required_skills}
+                            ${j.is_walk_in && j.walk_in_address ? `<div style="font-size:12px; margin-top:8px; padding:8px; background:#E8F5E9; border-radius:8px; color:#1b8c4f;">📍 <strong>Walk-In:</strong> ${j.walk_in_address}</div>` : ''}
+                        </div>
+                        <div class="jc-footer" style="justify-content: flex-start; gap: 8px; flex-wrap:wrap;">
+                            ${applyBtnHtml}
+                            ${aiSalaryHtml}
+                            ${currentUserRole === 'candidate' ? `<button class="jc-apply" style="background:var(--purple); color:white;" onclick="generateLearningPath(${j.id})">📚 AI Learning Path</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Auth Forms
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const res = await apiCall('login', 'POST', {
+                    username: e.target.elements[0].value,
+                    password: e.target.elements[1].value
+                });
+                initAppFlow(res.role, e.target.elements[0].value);
+            } catch (err) { alert(err.error || 'Invalid credentials'); }
+        };
+
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = '⏳ Creating...';
+            try {
+                const role = e.target.elements[0].value;
+                const username = e.target.elements[1].value;
+                const password = e.target.elements[3].value;
+                
+                await apiCall('register', 'POST', {
+                    role: role,
+                    username: username,
+                    email: e.target.elements[2].value,
+                    password: password
+                });
+                
+                // Auto-login
+                const loginRes = await apiCall('login', 'POST', {
+                    username: username,
+                    password: password
+                });
+                
+                // Redirect immediately to Profile section
+                initAppFlow(loginRes.role, username, 'profile');
+                alert('Registered successfully! Please complete your profile.');
+            } catch (err) { alert(err.error || JSON.stringify(err)); }
+            finally {
+                btn.disabled = false;
+                btn.innerText = '🎉 Create Account';
+            }
+        };
+
+        // CANDIDATE dashboard logic — shows applied count + applied jobs list + profile form
+        async function loadCandidateData() {
+            try {
+                // Load applications
+                const apps = await apiCall('candidate/applications');
+                document.getElementById('c-stat-applied').innerText = apps.length;
+                const appList = document.getElementById('applied-jobs-list');
+                if (!apps || apps.length === 0) {
+                    appList.innerHTML = '<div style="text-align:center; padding:32px 0;"><div style="font-size:48px; margin-bottom:12px;">📭</div><p style="color:#999; font-weight:600;">No applications yet.</p><p style="color:#bbb; font-size:13px; margin-top:4px;">Browse the feed and hit Apply on a job!</p></div>';
+                } else {
+                    appList.innerHTML = apps.map(a => {
+                        const statusColor = a.status === 'Shortlisted' ? 'var(--green)' : a.status === 'Rejected' ? 'var(--coral)' : 'var(--purple)';
+                        const salaryStr = a.salary ? `₹${Number(a.salary).toLocaleString('en-IN')}/month` : 'N/A';
+                        return `
+                            <div style="border:2px solid #F0F0F8; border-radius:16px; padding:18px; margin-bottom:12px; transition:.2s;" onmouseover="this.style.borderColor='var(--coral)'" onmouseout="this.style.borderColor='#F0F0F8'">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                                    <div>
+                                        <div style="font-family:'Nunito',sans-serif; font-weight:800; font-size:16px; color:var(--dark);">${a.job_title}</div>
+                                        <div style="font-size:13px; color:#999; margin-top:3px;">${a.company_name} &bull; Pin: ${a.pincode}</div>
+                                    </div>
+                                    <span style="background:${statusColor}22; color:${statusColor}; font-size:12px; font-weight:800; padding:5px 14px; border-radius:20px; white-space:nowrap;">${a.status}</span>
+                                </div>
+                                <div style="display:flex; gap:20px; margin-top:12px; font-size:13px; color:#666; flex-wrap:wrap;">
+                                    <span>💰 ${salaryStr}</span>
+                                    <span>🎯 Match: <strong>${a.match_score}%</strong></span>
+                                    <span>📅 ${a.applied_at}</span>
+                                </div>
+                                <div style="margin-top:10px; padding:10px; background:var(--offwhite); border-radius:12px; font-size:13px; color:var(--dark);">
+                                    <strong>HR Contact:</strong> ${a.contact_name || 'N/A'} | <strong>Call:</strong> ${a.contact_phone || 'N/A'} | <strong>Email:</strong> ${a.contact_email || 'N/A'}
+                                </div>
+                            </div>`;
+                    }).join('');
+                }
+
+                // Load candidate profile
+                const profile = await apiCall('candidate/profile');
+                if (profile) {
+                    document.getElementById('c-skills').value = profile.skills || '';
+                    document.getElementById('c-experience').value = profile.experience || 0;
+                    document.getElementById('c-pincode').value = profile.pincode || '';
+                    document.getElementById('c-phone').value = profile.phone || '';
+                    document.getElementById('c-contact-email').value = profile.contact_email || '';
+                    window.currentCandidateSkills = profile.skills;
+                }
+            } catch (err) {
+                console.error('Failed to load candidate data', err);
+            }
+        }
+
+        document.getElementById('candidate-profile-form').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await apiCall('candidate/profile', 'POST', {
+                    skills: document.getElementById('c-skills').value,
+                    experience: document.getElementById('c-experience').value,
+                    pincode: document.getElementById('c-pincode').value,
+                    phone: document.getElementById('c-phone').value,
+                    contact_email: document.getElementById('c-contact-email').value
+                });
+                alert('Profile updated successfully!');
+                loadCandidateData();
+            } catch (err) { alert('Error updating profile'); }
+        };
+
+        async function applyJob(id) {
+            try {
+                const res = await apiCall('candidate/apply', 'POST', { job_id: id });
+                alert(`Applied successfully!\nYour ranking has been sent to the employer.`);
+                // Refresh dashboard stats if visible
+                if (document.getElementById('candidate-dashboard').classList.contains('active')) {
+                    loadCandidateData();
+                }
+            } catch (err) { alert('Error applying to job (maybe you already applied?)'); }
+        }
+
+        // EMPLOYER dashboard logic
+        async function loadEmployerData() {
+            try {
+                // profile
+                const profile = await apiCall('employer/profile');
+                if (profile && profile.id) {
+                    window.currentEmployerProfileId = profile.id;
+                    document.getElementById('e-company').value = profile.company_name || '';
+                    document.getElementById('e-pincode').value = profile.pincode || '';
+                    document.getElementById('e-contact-name').value = profile.contact_name || '';
+                    document.getElementById('e-contact-phone').value = profile.contact_phone || '';
+                    document.getElementById('e-contact-email').value = profile.contact_email || '';
+                }
+
+                // posted jobs
+                const jobs = await apiCall('employer/jobs');
+                
+                document.getElementById('e-stat-jobs').innerText = jobs.length;
+                const totalApplicants = jobs.reduce((sum, job) => sum + (job.applicants_count || 0), 0);
+                document.getElementById('e-stat-applicants').innerText = totalApplicants;
+                
+                const list = document.getElementById('posted-jobs-list');
+                list.innerHTML = '';
+                if(jobs.length === 0) {
+                    list.innerHTML = '<p>You have not posted any jobs yet.</p>';
+                }
+                jobs.forEach(j => {
+                    const eSalaryStr = j.salary ? `₹${Number(j.salary).toLocaleString('en-IN')}/month` : 'N/A';
+                    list.innerHTML += `
+                        <div class="job-card">
+                            <div class="jc-top">
+                                <div class="jc-logo jcl-3">🏢</div>
+                                <div class="jc-info">
+                                    <h3 style="margin-bottom:4px;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;">${j.title}</h3>
+                                    <span style="font-size:13px;color:#999;">Pin: ${j.pincode}</span>
+                                </div>
+                            </div>
+                            <div class="jc-tags" style="margin-bottom:12px;">
+                                <span class="pj-tag pj-tag-a">💰 ${eSalaryStr}</span>
+                                ${j.is_walk_in ? '<span class="pj-tag pj-tag-b">🚶 Walk-In</span>' : ''}
+                            </div>
+                            <div style="font-size:13px; color:#666; margin-bottom:12px; padding:10px; background:var(--offwhite); border-radius:12px;">
+                                <strong>Expected Skills:</strong> ${j.required_skills}<br>
+                                <strong>Total Applicants:</strong> ${j.applicants_count || 0}
+                                ${j.is_walk_in && j.walk_in_address ? `<div style="font-size:12px; margin-top:8px; padding:8px; background:#E8F5E9; border-radius:8px; color:#1b8c4f;">📍 <strong>Walk-In:</strong> ${j.walk_in_address}</div>` : ''}
+                            </div>
+                            <div class="jc-footer" style="justify-content: flex-start; gap: 8px; flex-wrap:wrap;">
+                                <button class="jc-apply" onclick="viewCandidates(${j.id}, '${j.title}')">View Ranked Candidates (${j.applicants_count || 0})</button>
+                                <button class="jc-apply" style="background:var(--yellow); color:var(--dark);" onclick="editJob(${j.id}, '${(j.title || '').replace(/'/g,"\\'") }', '${(j.required_skills || '').replace(/'/g,"\\'") }', '${j.pincode}', ${j.salary || 0}, ${j.is_walk_in || false}, '${(j.walk_in_address || '').replace(/'/g,"\\'") }')">✏️ Edit Job</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {}
+        }
+
+        document.getElementById('employer-profile-form').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await apiCall('employer/profile', 'POST', {
+                    company_name: document.getElementById('e-company').value,
+                    pincode: document.getElementById('e-pincode').value,
+                    contact_name: document.getElementById('e-contact-name').value,
+                    contact_phone: document.getElementById('e-contact-phone').value,
+                    contact_email: document.getElementById('e-contact-email').value
+                });
+                alert('Company Profile saved!');
+            } catch (err) { alert('Error saving profile'); }
+        };
+
+        document.getElementById('post-job-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const salaryVal = document.getElementById('j-salary').value;
+            if (!salaryVal || Number(salaryVal) <= 0) {
+                alert('Please enter a valid salary before posting the job.');
+                return;
+            }
+            try {
+                const isWalkIn = document.getElementById('j-walk-in').checked;
+                await apiCall('employer/job', 'POST', {
+                    title: document.getElementById('j-title').value,
+                    required_skills: document.getElementById('j-skills').value,
+                    pincode: document.getElementById('j-pincode').value,
+                    salary: salaryVal,
+                    is_walk_in: isWalkIn,
+                    walk_in_address: isWalkIn ? document.getElementById('j-walk-in-address').value : ''
+                });
+                alert('Job Posted to the Global Feed!');
+                e.target.reset();
+                document.getElementById('j-walk-in-addr-group').style.display = 'none';
+                loadEmployerData();
+            } catch (err) { alert('Error posting job'); }
+        };
+
+        // RANKED CANDIDATES logic
+        let currentJobCandidates = [];
+        let currentCandidateTab = 'recommended';
+        let currentViewJobId = null;
+        let currentViewJobTitle = '';
+
+        async function viewCandidates(jobId, title) {
+            currentViewJobId = jobId;
+            currentViewJobTitle = title;
+            currentCandidateTab = 'recommended'; 
+            showSection('ranked-candidates');
+            document.getElementById('rc-job-title').innerText = `Candidates for: ${title}`;
+            
+            // Reset tabs
+            document.getElementById('tab-recommended-candidates').classList.add('active');
+            document.getElementById('tab-all-candidates').classList.remove('active');
+
+            try {
+                currentJobCandidates = await apiCall(`employer/job/${jobId}/ranked-candidates`);
+                renderCandidatesList();
+            } catch (err) { alert('Error loading candidates'); }
+        }
+
+        function switchCandidateTab(tab) {
+            currentCandidateTab = tab;
+            document.getElementById('tab-recommended-candidates').classList.toggle('active', tab === 'recommended');
+            document.getElementById('tab-all-candidates').classList.toggle('active', tab === 'all');
+            renderCandidatesList();
+        }
+
+        function renderCandidatesList() {
+            const list = document.getElementById('candidates-list');
+            list.innerHTML = '';
+            
+            let filtered = currentJobCandidates;
+            if (currentCandidateTab === 'recommended') {
+                // Filter logic: match_score >= 50 as Recommended
+                filtered = currentJobCandidates.filter(c => (c.match_score || 0) >= 50);
+            }
+
+            if(filtered.length === 0) {
+                const msg = currentCandidateTab === 'recommended' 
+                    ? 'No candidates meet the recommendation threshold (50%) yet. Try checking "All Applicants".' 
+                    : 'No candidates have applied yet.';
+                list.innerHTML = `<p style="text-align:center; padding:32px; color:#666;">${msg}</p>`;
+                return;
+            }
+
+            filtered.forEach(app => {
+                let stColor = app.status === 'Shortlisted' ? '#10b981' : (app.status === 'Rejected' ? '#ef4444' : '#f59e0b');
+                list.innerHTML += `
+                    <div class="job-card" style="border-left: 6px solid ${stColor};">
+                        <div class="jc-top">
+                            <div class="jc-info" style="width:100%;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                    <h3 style="margin-bottom:4px;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;">${app.candidate_name}</h3>
+                                    <span class="pj-tag pj-tag-b" style="background:${stColor}; font-size:12px;">Match: ${app.match_score.toFixed(2)}%</span>
+                                </div>
+                                <span style="font-size:13px;color:#999;">Applied on: ${new Date(app.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div style="font-size:13px; color:#666; margin-bottom:12px; padding:10px; background:var(--offwhite); border-radius:12px;">
+                            <strong>Skills:</strong> ${app.candidate_skills}<br/>
+                            <strong>Exp:</strong> ${app.candidate_experience || 0} yrs &bull; <strong>Pin:</strong> ${app.candidate_pincode || 'N/A'}<br/>
+                            <strong>Contact:</strong> ${app.candidate_phone || 'No phone'} | ${app.candidate_contact_email || 'No email'}<br/>
+                            Status: <strong style="color: ${stColor}">${app.status}</strong>
+                        </div>
+                        <div class="jc-footer" style="justify-content: flex-start; gap: 8px;">
+                            <button class="jc-apply" style="background:#10b981; color:white;" onclick="updateStatus(${app.id}, 'Shortlisted', ${currentViewJobId}, '${currentViewJobTitle.replace(/'/g, "\\'")}')">Shortlist</button>
+                            <button class="jc-apply" style="background:#ef4444; color:white;" onclick="updateStatus(${app.id}, 'Rejected', ${currentViewJobId}, '${currentViewJobTitle.replace(/'/g, "\\'")}')">Reject</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function updateStatus(appId, status, jobId, title) {
+            try {
+                await apiCall(`employer/application/${appId}/status`, 'PATCH', { status });
+                viewCandidates(jobId, title); // Refresh the list
+            } catch (err) { alert('Error updating status'); }
+        }
+
+        // EDIT JOB logic
+        let editingJobId = null;
+
+        async function editJob(id, title, skills, pincode, salary, is_walk_in, walk_in_address) {
+            editingJobId = id;
+            document.getElementById('edit-j-title').value = title || '';
+            document.getElementById('edit-j-skills').value = skills || '';
+            document.getElementById('edit-j-pincode').value = pincode || '';
+            document.getElementById('edit-j-salary').value = salary || 0;
+            const walkInCheck = document.getElementById('edit-j-walk-in');
+            walkInCheck.checked = !!is_walk_in;
+            document.getElementById('edit-j-walk-in-addr-group').style.display = is_walk_in ? 'block' : 'none';
+            document.getElementById('edit-j-walk-in-address').value = walk_in_address || '';
+            
+            try {
+                const j = await apiCall(`employer/job/${id}/edit`, 'GET').catch(() => null);
+                // Fall back to feed data if dedicated GET not available
+                let jobData = j;
+                if (!jobData || jobData.error) {
+                    // Fetch from employer jobs list
+                    const jobs = await apiCall('employer/jobs');
+                    jobData = jobs.find(job => job.id === id);
+                }
+                if (jobData) {
+                    document.getElementById('edit-j-title').value = jobData.title || '';
+                    document.getElementById('edit-j-skills').value = jobData.required_skills || '';
+                    document.getElementById('edit-j-pincode').value = jobData.pincode || '';
+                    document.getElementById('edit-j-salary').value = jobData.salary || 0;
+                    walkInCheck.checked = !!jobData.is_walk_in;
+                    document.getElementById('edit-j-walk-in-addr-group').style.display = jobData.is_walk_in ? 'block' : 'none';
+                    document.getElementById('edit-j-walk-in-address').value = jobData.walk_in_address || '';
+                }
+            } catch(err) { console.error('Failed to load job for editing', err); }
+            document.getElementById('edit-job-modal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-job-modal').style.display = 'none';
+            editingJobId = null;
+        }
+
+        document.getElementById('edit-job-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!editingJobId) return;
+            try {
+                const editWalkIn = document.getElementById('edit-j-walk-in').checked;
+                await apiCall(`employer/job/${editingJobId}/edit`, 'PATCH', {
+                    title: document.getElementById('edit-j-title').value,
+                    required_skills: document.getElementById('edit-j-skills').value,
+                    pincode: document.getElementById('edit-j-pincode').value,
+                    salary: document.getElementById('edit-j-salary').value,
+                    is_walk_in: editWalkIn,
+                    walk_in_address: editWalkIn ? document.getElementById('edit-j-walk-in-address').value : ''
+                });
+                alert('Job updated successfully!');
+                closeEditModal();
+                loadFeed();
+                if (currentUserRole === 'employer') loadEmployerData();
+            } catch (err) { alert('Error updating job: ' + (err.error || JSON.stringify(err))); }
+        };
+
+        // AI FEATURES logic
+        function showAILoading(title) {
+            document.getElementById('ai-modal').style.display = 'flex';
+            document.getElementById('ai-modal-title').innerHTML = title;
+            document.getElementById('ai-modal-content').innerHTML = `
+                <div style="text-align:center; padding: 2rem;">
+                    <div style="display:inline-block; border: 4px solid rgba(139, 92, 246, 0.3); border-top: 4px solid #8b5cf6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                    <p style="margin-top: 1rem; color: #666;">Wait for a moment...</p>
+                </div>
+            `;
+        }
+
+        async function checkSalary(jobId) {
+            showAILoading('✨ AI Salary Fairness Check');
+            try {
+                const res = await apiCall(`candidate/job/${jobId}/salary-check`, 'GET');
+                if (res.error) {
+                    document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Error: ${res.message || res.error}</p>`;
+                    return;
+                }
+                
+                let statusColor = '#10b981'; // Green for Fair/Excellent
+                if (res.status === 'Below Average') statusColor = '#f59e0b';
+                if (res.status === 'Poor' || res.status === 'Unfair') statusColor = '#ef4444';
+
+                document.getElementById('ai-modal-content').innerHTML = `
+                    <div style="text-align:center; margin-bottom: 2rem;">
+                        <h2 style="color: ${statusColor}; font-size: 2rem; margin-bottom: 0.5rem;">${res.status}</h2>
+                        <p style="color: #666; font-size: 1.1rem;">Estimated Market Range: <strong>${res.market_range || 'Unknown'}</strong></p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; border-left: 4px solid ${statusColor};">
+                        <p style="line-height: 1.6;">${res.explanation}</p>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to fetch salary assessment. Ensure your profile is complete.</p>`;
+            }
+        }
+
+        async function generateLearningPath(jobId) {
+            showAILoading('📚 Personalized Learning Path');
+            try {
+                const res = await apiCall(`candidate/job/${jobId}/learning-path`, 'POST');
+                if (res.error) {
+                    document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Error: ${res.message || res.error}</p>`;
+                    return;
+                }
+
+                let roadmapHtml = '';
+                if (res.roadmap && res.roadmap.length > 0) {
+                    res.roadmap.forEach((item, idx) => {
+                        roadmapHtml += `
+                            <div style="background: rgba(255,255,255,0.05); margin-bottom: 1rem; padding: 1.25rem; border-radius: 12px; position:relative;">
+                                <div style="position:absolute; top:-10px; left:-10px; background:#8b5cf6; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">${idx+1}</div>
+                                <h4 style="color: #c084fc; margin-bottom: 0.5rem; margin-left:1rem;">${item.topic}</h4>
+                                <p style="font-size: 0.9rem; margin-left:1rem; margin-bottom:0.5rem;"><strong>Focus:</strong> ${item.focus_area}</p>
+                                <div style="display:flex; justify-content:space-between; margin-left:1rem; font-size: 0.85rem; color: #666;">
+                                    <span>⏱️ ${item.estimated_time}</span>
+                                    <span>🔗 ${item.resource_suggestion}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    roadmapHtml = `<p style="text-align:center; color:#10b981;">Great news! You already have all the required skills for this job.</p>`;
+                }
+
+                document.getElementById('ai-modal-content').innerHTML = `
+                    <p style="margin-bottom: 1.5rem; line-height: 1.6; color: #666;">
+                        <strong>Analysis:</strong> ${res.gap_analysis}
+                    </p>
+                    <div>
+                        ${roadmapHtml}
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to generate learning path. Ensure your profile has skills listed.</p>`;
+            }
+        }
+
+        // INIT
+        checkAuthAndInit();
+
+    </script>
+</body>
+</html>
