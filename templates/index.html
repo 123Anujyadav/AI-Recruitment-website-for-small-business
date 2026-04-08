@@ -1689,7 +1689,7 @@
             showAILoading('✨ AI Salary Fairness Check');
             try {
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 150000)
+                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 600000)
                 );
                 const res = await Promise.race([
                     apiCall(`candidate/job/${jobId}/salary-check`, 'GET'),
@@ -1727,7 +1727,7 @@
             showAILoading('📚 Personalized Learning Path');
             try {
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 150000)
+                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 600000)
                 );
                 const res = await Promise.race([
                     apiCall(`candidate/job/${jobId}/learning-path`, 'POST'),
@@ -1795,15 +1795,9 @@
                         <div style="color: #666; font-size: 14px;">📍 ${res.city || 'No city'} &bull; Pin: ${res.pincode || 'N/A'}</div>
                     </div>
                 `;
-                if (res.about) {
-                    html += `<div style="margin-bottom: 16px;"><strong>About:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.about}</p></div>`;
-                }
-                if (res.org_details) {
-                    html += `<div style="margin-bottom: 16px;"><strong>Organization Details:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.org_details}</p></div>`;
-                }
-                if (res.website_links) {
-                    html += `<div style="margin-bottom: 16px;"><strong>Website/Links:</strong><div style="margin-top: 4px; font-size: 14px;">${linkify(res.website_links)}</div></div>`;
-                }
+                html += `<div style="margin-bottom: 16px;"><strong>About:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.about || 'Not provided'}</p></div>`;
+                html += `<div style="margin-bottom: 16px;"><strong>Organisation Details:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.org_details || 'Not provided'}</p></div>`;
+                html += `<div style="margin-bottom: 16px;"><strong>Website/Social:</strong><div style="margin-top: 4px; font-size: 14px;">${res.website_links ? linkify(res.website_links) : 'Not provided'}</div></div>`;
                 
                 if (res.contact_name || res.contact_phone || res.contact_email) {
                     html += `<div style="margin-top: 24px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--green); border-radius: 12px;">
