@@ -317,7 +317,7 @@
       </div>
       <div class="form-group">
         <label>Staff Access</label>
-        <select id="um-staff"><option value="false">No</option><option value="true">Yes (Admin)</option></select>
+        <select id="um-staff" onchange="toggleRoleSelect()"><option value="false">No</option><option value="true">Yes (Admin)</option></select>
       </div>
     </div>
     <div class="modal-foot">
@@ -338,8 +338,8 @@
       <input type="hidden" id="jm-id"/>
       <div class="form-group"><label>Job Title</label><input type="text" id="jm-title" placeholder="e.g. Frontend Developer"/></div>
       <div class="form-group"><label>Required Skills <span style="color:var(--muted);font-weight:400">(comma separated)</span></label><input type="text" id="jm-skills" placeholder="Python, Django, React"/></div>
-      <div class="form-group"><label>Pincode</label><input type="text" id="jm-pincode" placeholder="110001"/></div>
-      <div class="form-group"><label>Monthly Salary (₹ INR)</label><input type="number" id="jm-salary" min="0" step="1" placeholder="e.g. 500000" required/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="jm-pincode" placeholder="110001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
+      <div class="form-group"><label>Monthly Salary (₹ INR)</label><input type="text" id="jm-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 500000" required/></div>
       <div class="form-group"><label>Employer Profile ID</label><input type="number" id="jm-employer" placeholder="employer profile id"/></div>
     </div>
     <div class="modal-foot">
@@ -360,7 +360,7 @@
       <input type="hidden" id="cm-id"/>
       <div class="form-group"><label>Skills <span style="color:var(--muted);font-weight:400">(comma separated)</span></label><input type="text" id="cm-skills"/></div>
       <div class="form-group"><label>Experience (years)</label><input type="number" id="cm-exp"/></div>
-      <div class="form-group"><label>Pincode</label><input type="text" id="cm-pincode"/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="cm-pincode" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
     </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal('candidate-modal')">Cancel</button>
@@ -379,9 +379,9 @@
     <div class="modal-body">
       <input type="hidden" id="em-id"/>
       <div class="form-group"><label>Company Name</label><input type="text" id="em-company"/></div>
-      <div class="form-group"><label>Pincode</label><input type="text" id="em-pincode"/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="em-pincode" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
       <div class="form-group"><label>HR Name</label><input type="text" id="em-contact-name" placeholder="HR Name"/></div>
-      <div class="form-group"><label>HR Contact</label><input type="text" id="em-contact-phone" placeholder="HR Phone"/></div>
+      <div class="form-group"><label>HR Contact</label><input type="text" id="em-contact-phone" placeholder="HR Phone" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
       <div class="form-group"><label>HR Email</label><input type="email" id="em-contact-email" placeholder="hr@company.com"/></div>
     </div>
     <div class="modal-foot">
@@ -503,7 +503,6 @@ async function loadStats() {
   cachedStats = r.data;
   const { total_users, total_jobs, total_applications, total_candidates, total_employers } = r.data;
   const cards = [
-    { label:'Total Users',        value: total_users,        icon:'👥' },
     { label:'Total Jobs',         value: total_jobs,         icon:'💼' },
     { label:'Applications',       value: total_applications, icon:'📋' },
     { label:'Candidates',         value: total_candidates,   icon:'🎯' },
@@ -526,9 +525,8 @@ function renderChart() {
   const ctx = document.getElementById('statsChart').getContext('2d');
   const type = document.getElementById('chartType').value;
   const { total_users, total_jobs, total_applications, total_candidates, total_employers } = cachedStats;
-  const dataValues = [total_users, total_jobs, total_applications, total_candidates, total_employers];
+  const dataValues = [total_jobs, total_applications, total_candidates, total_employers];
   const bgColors = [
-    'rgba(99, 102, 241, 0.8)',
     'rgba(139, 92, 246, 0.8)',
     'rgba(16, 185, 129, 0.8)',
     'rgba(6, 182, 212, 0.8)',
@@ -547,7 +545,7 @@ function renderChart() {
   statsChartInstance = new Chart(ctx, {
     type: type,
     data: {
-      labels: ['Users', 'Jobs', 'Applications', 'Candidates', 'Employers'],
+      labels: ['Jobs', 'Applications', 'Candidates', 'Employers'],
       datasets: [{
         label: 'Total Count',
         data: dataValues,
@@ -582,9 +580,10 @@ async function loadUsers() {
   document.getElementById('users-table').innerHTML = `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   const r = await req('GET', '/users');
   if (!r.ok) { document.getElementById('users-table').innerHTML = `<div class="empty">Failed to load users</div>`; return; }
-  const rows = r.data.map(u => `
+  const rows = r.data.map((u, i) => `
     <tr>
-      <td>${u.id}</td>
+      <td>${i + 1}</td>
+      <td>${fmtID(u.id, u.role, u.is_staff)}</td>
       <td><strong>${esc(u.username)}</strong></td>
       <td>${esc(u.email||'—')}</td>
       <td>${u.is_staff ? '<span class="badge-role badge-admin">Admin</span>' : `<span class="badge-role badge-${u.role}">${u.role}</span>`}</td>
@@ -595,7 +594,7 @@ async function loadUsers() {
       </div></td>
     </tr>`).join('');
   document.getElementById('users-table').innerHTML = rows
-    ? `<table><thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>S.No</th><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<div class="empty">No users found</div>`;
 }
 
@@ -607,7 +606,16 @@ function openUserModal(u) {
   document.getElementById('um-password').value = '';
   document.getElementById('um-role').value = u ? (u.role||'candidate') : 'candidate';
   document.getElementById('um-staff').value = u ? String(u.is_staff) : 'false';
+  toggleRoleSelect();
   openModal('user-modal');
+}
+
+function toggleRoleSelect() {
+  const isStaff = document.getElementById('um-staff').value === 'true';
+  const roleSel = document.getElementById('um-role');
+  roleSel.disabled = isStaff;
+  if (isStaff) roleSel.style.opacity = '0.5';
+  else roleSel.style.opacity = '1';
 }
 
 async function saveUser() {
@@ -636,9 +644,10 @@ async function loadJobs() {
   document.getElementById('jobs-table').innerHTML = `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   const r = await req('GET', '/jobs');
   if (!r.ok) { document.getElementById('jobs-table').innerHTML = `<div class="empty">Failed to load jobs</div>`; return; }
-  const rows = r.data.map(j => `
+  const rows = r.data.map((j, i) => `
     <tr>
-      <td>${j.id}</td>
+      <td>${i + 1}</td>
+      <td>${fmtID(j.id, 'job')}</td>
       <td><strong>${esc(j.title)}</strong></td>
       <td>${esc(j.company_name||'—')}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(j.required_skills)}</td>
@@ -650,7 +659,7 @@ async function loadJobs() {
       </div></td>
     </tr>`).join('');
   document.getElementById('jobs-table').innerHTML = rows
-    ? `<table><thead><tr><th>ID</th><th>Title</th><th>Company</th><th>Skills</th><th>Pincode</th><th>Salary</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>S.No</th><th>ID</th><th>Title</th><th>Company</th><th>Skills</th><th>Pincode</th><th>Salary</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<div class="empty">No jobs found</div>`;
 }
 
@@ -691,9 +700,10 @@ async function loadApplications() {
   document.getElementById('applications-table').innerHTML = `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   const r = await req('GET', '/applications');
   if (!r.ok) { document.getElementById('applications-table').innerHTML = `<div class="empty">Failed to load applications</div>`; return; }
-  const rows = r.data.map(a => `
+  const rows = r.data.map((a, i) => `
     <tr>
-      <td>${a.id}</td>
+      <td>${i + 1}</td>
+      <td>${fmtID(a.id, 'application')}</td>
       <td>${esc(a.candidate_name||'—')}</td>
       <td>${esc(a.job_title||'—')}</td>
       <td>${(+a.match_score||0).toFixed(1)}%</td>
@@ -707,7 +717,7 @@ async function loadApplications() {
       <td><button class="btn-sm btn-danger" onclick="deleteApp(${a.id})">Delete</button></td>
     </tr>`).join('');
   document.getElementById('applications-table').innerHTML = rows
-    ? `<table><thead><tr><th>ID</th><th>Candidate</th><th>Job</th><th>Score</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>S.No</th><th>ID</th><th>Candidate</th><th>Job</th><th>Score</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<div class="empty">No applications found</div>`;
 }
 
@@ -729,9 +739,10 @@ async function loadCandidates() {
   document.getElementById('candidates-table').innerHTML = `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   const r = await req('GET', '/candidates');
   if (!r.ok) { document.getElementById('candidates-table').innerHTML = `<div class="empty">Failed to load candidates</div>`; return; }
-  const rows = r.data.map(c => `
+  const rows = r.data.map((c, i) => `
     <tr>
-      <td>${c.id}</td>
+      <td>${i + 1}</td>
+      <td>${fmtID(c.id, 'candidate')}</td>
       <td>${esc(c.username||'—')}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(c.skills||'—')}</td>
       <td>${c.experience} yrs</td>
@@ -742,7 +753,7 @@ async function loadCandidates() {
       </div></td>
     </tr>`).join('');
   document.getElementById('candidates-table').innerHTML = rows
-    ? `<table><thead><tr><th>ID</th><th>User</th><th>Skills</th><th>Experience</th><th>Pincode</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>S.No</th><th>ID</th><th>User</th><th>Skills</th><th>Experience</th><th>Pincode</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<div class="empty">No candidate profiles found</div>`;
 }
 
@@ -775,9 +786,10 @@ async function loadEmployers() {
   document.getElementById('employers-table').innerHTML = `<div class="loading"><div class="spinner"></div> Loading…</div>`;
   const r = await req('GET', '/employers');
   if (!r.ok) { document.getElementById('employers-table').innerHTML = `<div class="empty">Failed to load employers</div>`; return; }
-  const rows = r.data.map(e => `
+  const rows = r.data.map((e, i) => `
     <tr>
-      <td>${e.id}</td>
+      <td>${i + 1}</td>
+      <td>${fmtID(e.id, 'employer')}</td>
       <td>${esc(e.username||'—')}</td>
       <td>${esc(e.company_name||'—')}</td>
       <td>${esc(e.pincode||'—')}</td>
@@ -790,7 +802,7 @@ async function loadEmployers() {
       </div></td>
     </tr>`).join('');
   document.getElementById('employers-table').innerHTML = rows
-    ? `<table><thead><tr><th>ID</th><th>User</th><th>Company</th><th>Pincode</th><th>HR Name</th><th>Contact</th><th>Email</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+    ? `<table><thead><tr><th>S.No</th><th>ID</th><th>User</th><th>Company</th><th>Pincode</th><th>HR Name</th><th>Contact</th><th>Email</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
     : `<div class="empty">No employer profiles found</div>`;
 }
 
@@ -823,6 +835,15 @@ async function deleteEmp(id) {
 }
 
 // ─── UTILS ───
+function fmtID(id, type, isStaff=false) {
+  if (isStaff) return 'AD' + String(id).padStart(2, '0');
+  if (type === 'employer') return 'EM' + String(id).padStart(4, '0');
+  if (type === 'candidate') return 'CA' + String(id).padStart(4, '0');
+  if (type === 'job') return 'JB' + String(id).padStart(4, '0');
+  if (type === 'application') return 'AP' + String(id).padStart(4, '0');
+  return id;
+}
+
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

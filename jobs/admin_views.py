@@ -97,15 +97,13 @@ class AdminUsersView(CsrfExemptAPIView):
         if not is_admin(request):
             return Response({'error': 'Admin access required'}, status=403)
         data = request.data.copy()
-        password = data.pop('password', None)
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
-            if password:
-                user.set_password(password)
+            # is_staff is not in the serializer, so we handle it manually
             if data.get('is_staff'):
                 user.is_staff = True
-            user.save()
+                user.save()
             return Response({'id': user.id, 'username': user.username}, status=201)
         return Response(serializer.errors, status=400)
 
@@ -272,7 +270,7 @@ class AdminCandidateProfilesView(CsrfExemptAPIView):
     def get(self, request):
         if not is_admin(request):
             return Response({'error': 'Admin access required'}, status=403)
-        profiles = CandidateProfile.objects.all().select_related('user')
+        profiles = CandidateProfile.objects.filter(user__is_staff=False).select_related('user')
         serializer = CandidateProfileSerializer(profiles, many=True)
         return Response(serializer.data)
 
@@ -310,7 +308,7 @@ class AdminEmployerProfilesView(CsrfExemptAPIView):
     def get(self, request):
         if not is_admin(request):
             return Response({'error': 'Admin access required'}, status=403)
-        profiles = EmployerProfile.objects.all().select_related('user')
+        profiles = EmployerProfile.objects.filter(user__is_staff=False).select_related('user')
         serializer = EmployerProfileSerializer(profiles, many=True)
         return Response(serializer.data)
 

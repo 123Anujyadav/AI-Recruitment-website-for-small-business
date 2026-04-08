@@ -83,6 +83,34 @@
     transition: .2s;
   }
   .nav-pill-lang:hover { transform: scale(1.05); }
+
+  /* Navbar Avatar */
+  .nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 16px;
+    cursor: pointer;
+    transition: .2s;
+    padding: 4px 8px;
+    border-radius: 30px;
+  }
+  .nav-profile:hover { background: var(--offwhite); }
+  .nav-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--coral);
+    background: white;
+  }
+  .nav-username {
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    color: var(--dark);
+    font-size: 14px;
+    display: block; /* Show the username next to avatar */
+  }
   .nav-cta {
     background: var(--coral);
     color: white;
@@ -301,7 +329,7 @@
   .cta-banner::before { content: '🚀'; position: absolute; font-size: 160px; right: 80px; top: -20px; opacity: 0.15; transform: rotate(20deg); }
   .cta-banner h2 { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 38px; color: white; max-width: 480px; line-height: 1.2; }
   .cta-banner h2 span { color: var(--yellow); }
-  .cta-btns { display: flex; gap: 14px; flex-direction: column; align-items: flex-start; }
+  .cta-btns { display: flex; gap: 14px; flex-direction: row; align-items: center; }
 
   /* JOB CARDS logic generated */
   .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -313,7 +341,7 @@
   .jc-info h3 { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 16px; margin-bottom: 3px; }
   .jc-info span { font-size: 13px; color: #999; }
   .jc-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .jc-apply { background: var(--coral); color: white; border: none; padding: 9px 20px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 0 #d94f4f; transition: .15s; font-family: 'Nunito Sans', sans-serif; }
+  .jc-apply { background: var(--coral); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #d94f4f; transition: .15s; font-family: 'Nunito Sans', sans-serif; }
   .jc-apply:hover { transform: translateY(2px); box-shadow: 0 2px 0 #d94f4f; }
 
   /* Remove conflicting old rules */
@@ -323,9 +351,10 @@
 <body>
 
 <nav>
+  {% csrf_token %}
   <a class="logo" onclick="homeClick()"><span class="logo-bubble">T</span> TalentAI</a>
   
-  <div id="public-nav" style="display: block;">
+  <div id="public-nav" style="display: flex; align-items: center;">
       <ul>
         <li><a onclick="showSection('landing-page')">About</a></li>
         <li><a onclick="showSection('auth-section')">Log in</a></li>
@@ -339,7 +368,10 @@
           <li><a onclick="showSection('home-feed'); loadFeed();">Feed</a></li>
           <li><a id="nav-dashboard" onclick="showDashboard()">Dashboard</a></li>
       </ul>
-      <span id="welcome-msg" onclick="showProfile()" style="margin: 0 16px; color: var(--dark); font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer; text-decoration:underline dotted var(--coral); text-underline-offset:3px; transition:.2s;" title="View my profile"></span>
+      <div class="nav-profile" onclick="showProfile()" title="View my profile">
+          <img id="nav-avatar-img" src="/static/img/avatar.png" class="nav-avatar" alt="Profile">
+          <span id="welcome-msg" class="nav-username"></span>
+      </div>
       <button class="nav-pill-lang" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -353,8 +385,8 @@
         <h1>Find Great<br>Staff <span class="squiggle">Nearby</span></h1>
         <p>Post jobs, screen candidates automatically, and hire the best people for your hotel, shop, or business — all in one place.</p>
         <div class="hero-actions">
-          <button class="btn" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #d94f4f;" onclick="showSection('auth-section')">🔍 Find Jobs Near Me</button>
-          <button class="big-btn-alt" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #e5c200;" onclick="showSection('auth-section')">📋 Post a Job</button>
+          <button class="btn" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #d94f4f;" onclick="findJobNearMeClick()">🔍 Find Jobs Near Me</button>
+          <button class="big-btn-alt" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #e5c200;" onclick="postJobClick()">📋 Post a Job</button>
         </div>
       </div>
       
@@ -371,7 +403,7 @@
           <div class="feat-icon">⚡</div>
           <div>Zero Manual Screening</div>
         </div>
-        <div class="desktop-container" style="display: flex; flex-direction: column; align-items: center;">
+        <div class="desktop-container">
           <div class="desktop-wrap">
             <div class="desktop-top-bar">
               <div class="desktop-dot dd-red"></div>
@@ -457,7 +489,6 @@
     <div class="cta-banner">
       <h2>Ready to hire your <span>dream team</span>?</h2>
       <div class="cta-btns">
-        <button class="nav-cta" style="padding:14px 32px; font-size:16px;" onclick="showSection('auth-section'); switchAuthTab('register');">🚀 Get Started Free</button>
       </div>
     </div>
 </main>
@@ -556,7 +587,10 @@
         <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">👤 My Profile</h2>
         
         <div class="glass-card">
-            <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin-bottom:20px;">Profile Information</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin:0;">Profile Information</h3>
+                <button id="c-edit-btn" type="button" class="btn btn-outline" style="display:none; padding:8px 16px; font-size:14px;" onclick="toggleCandidateProfileEdit(true)">✏️ Edit Profile</button>
+            </div>
             <form id="candidate-profile-form">
                 <div class="form-group">
                     <label>Skills (Comma separated)</label>
@@ -568,17 +602,29 @@
                 </div>
                 <div class="form-group">
                     <label>Pincode</label>
-                    <input type="text" id="c-pincode" placeholder="e.g. 226001" required>
+                    <input type="text" id="c-pincode" placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="c-city" placeholder="e.g. Lucknow" required>
                 </div>
                 <div class="form-group">
                     <label>Phone Number (for employers to contact you)</label>
-                    <input type="text" id="c-phone" placeholder="e.g. +91 9876543210">
+                    <input type="text" id="c-phone" placeholder="e.g. 9876543210" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group">
                     <label>Contact Email (for employers to contact you)</label>
                     <input type="email" id="c-contact-email" placeholder="e.g. candidate@email.com">
                 </div>
-                <button type="submit" class="btn">💾 Save Profile</button>
+                <div class="form-group">
+                    <label>About Me (Bio & Background)</label>
+                    <textarea id="c-about" rows="3" placeholder="Tell us about yourself and your professional journey" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Links / Portfolio (LinkedIn, GitHub, etc.)</label>
+                    <textarea id="c-links" rows="2" placeholder="Paste your profile links here (one per line)" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <button type="submit" id="c-save-btn" class="btn">💾 Save Profile</button>
             </form>
         </div>
     </div>
@@ -625,11 +671,15 @@
                         </div>
                         <div class="form-group">
                             <label>Job Site Pincode</label>
-                            <input type="text" id="j-pincode" required placeholder="e.g. 226001">
+                            <input type="text" id="j-pincode" required placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="j-city" required placeholder="e.g. Lucknow">
                         </div>
                         <div class="form-group">
                             <label>Monthly Salary (₹ INR)</label>
-                            <input type="number" id="j-salary" min="0" step="1" placeholder="e.g. 15000" required>
+                            <input type="text" id="j-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 15000" required>
                         </div>
                         <div class="checkbox-group">
                             <input type="checkbox" id="j-walk-in" onchange="document.getElementById('j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
@@ -638,6 +688,18 @@
                         <div class="form-group" id="j-walk-in-addr-group" style="display: none;">
                             <label>Walk-In Address</label>
                             <textarea id="j-walk-in-address" rows="2" placeholder="e.g. 123, MG Road, Bangalore - 560001"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Job Timer (Auto-Delete)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="j-timer-value" min="0" value="0" style="flex: 1;" placeholder="Amount">
+                                <select id="j-timer-unit" style="flex: 1;">
+                                    <option value="hours">Hours</option>
+                                    <option value="days">Days</option>
+                                    <option value="months">Months</option>
+                                </select>
+                            </div>
+                            <p style="font-size: 11px; color: #999; margin-top: 4px;">Set to 0 for No Timer (Manual Delete).</p>
                         </div>
                         <button type="submit" class="btn" style="width: 100%;">🚀 Post Job to Global Feed</button>
                     </form>
@@ -658,7 +720,10 @@
     <div class="container" style="max-width: 700px;">
         <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">🏢 Company Profile</h2>
         <div class="glass-card">
-            <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">Company Details</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin:0;">Company Details</h3>
+                <button id="e-edit-btn" type="button" class="btn btn-outline" style="display:none; padding:8px 16px; font-size:14px;" onclick="toggleEmployerProfileEdit(true)">✏️ Edit Profile</button>
+            </div>
             <form id="employer-profile-form">
                 <div class="form-group">
                     <label>Company Name / Store Name</label>
@@ -666,21 +731,37 @@
                 </div>
                 <div class="form-group">
                     <label>Company Pincode</label>
-                    <input type="text" id="e-pincode" placeholder="e.g. 226001">
+                    <input type="text" id="e-pincode" placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group">
-                    <label>HR Name (Visible only to applied candidates)</label>
+                    <label>City</label>
+                    <input type="text" id="e-city" placeholder="e.g. Lucknow">
+                </div>
+                <div class="form-group">
+                    <label>HR Name (Visible only to shortlisted candidates)</label>
                     <input type="text" id="e-contact-name" placeholder="e.g. John Doe">
                 </div>
                 <div class="form-group">
-                    <label>Contact Number (Visible only to applied candidates)</label>
-                    <input type="text" id="e-contact-phone" placeholder="e.g. +91 9876543210">
+                    <label>Contact Number (Visible only to shortlisted candidates)</label>
+                    <input type="text" id="e-contact-phone" placeholder="e.g. 9876543210" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group">
-                    <label>HR Email (Visible only to applied candidates)</label>
+                    <label>HR Email (Visible only to shortlisted candidates)</label>
                     <input type="email" id="e-contact-email" placeholder="e.g. hr@company.com">
                 </div>
-                <button type="submit" class="btn">💾 Save Profile</button>
+                <div class="form-group">
+                    <label>About the Company</label>
+                    <textarea id="e-about" rows="3" placeholder="Describe your company, culture, and what makes it a great place to work" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Website / Social Links</label>
+                    <textarea id="e-links" rows="2" placeholder="Company website or social media profiles" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Organization Details</label>
+                    <textarea id="e-org-details" rows="2" placeholder="e.g. Number of employees, type of business, founding year" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <button type="submit" id="e-save-btn" class="btn">💾 Save Profile</button>
             </form>
         </div>
     </div>
@@ -704,7 +785,7 @@
 
 <!-- Modals -->
 <div id="edit-job-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
-    <div class="glass-card" style="width:100%; max-width:480px; position:relative; margin: 1rem; border:none;">
+    <div class="glass-card" style="width:100%; max-width:480px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
         <button onclick="closeEditModal()" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
         <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">✏️ Edit Job</h3>
         <form id="edit-job-form">
@@ -718,11 +799,15 @@
             </div>
             <div class="form-group">
                 <label>Job Pincode</label>
-                <input type="text" id="edit-j-pincode" required>
+                <input type="text" id="edit-j-pincode" required pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" id="edit-j-city" required>
             </div>
             <div class="form-group">
                 <label>Monthly Salary (₹ INR)</label>
-                <input type="number" id="edit-j-salary" min="0" step="1" required>
+                <input type="text" id="edit-j-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="edit-j-walk-in" onchange="document.getElementById('edit-j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
@@ -732,9 +817,29 @@
                 <label>Walk-In Address</label>
                 <textarea id="edit-j-walk-in-address" rows="2"></textarea>
             </div>
-            <div style="display:flex; gap:12px; margin-top:24px;">
-                <button type="submit" class="btn" style="flex:1;">Save</button>
-                <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+            <div class="form-group" id="edit-j-current-expiry-group" style="display: none;">
+                <label style="color: var(--coral);">⏰ Current Expiration</label>
+                <p id="edit-j-current-expiry" style="font-size: 14px; font-weight: 700; color: var(--dark);"></p>
+                <small style="color: #999;">Setting a new timer below will RESET the expiration from now.</small>
+            </div>
+            <div class="form-group">
+                <label>Set New Auto-Delete Timer</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="edit-j-timer-value" min="0" value="0" style="flex: 1;" placeholder="Amount">
+                    <select id="edit-j-timer-unit" style="flex: 1;">
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                        <option value="months">Months</option>
+                    </select>
+                </div>
+                <p style="font-size: 11px; color: #999; margin-top: 4px;">Leave at 0 to keep current (or No Timer).</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px; margin-top:32px;">
+                <button type="submit" class="btn" style="width:100%; padding:16px; font-size:17px; box-shadow:0 8px 0 #d94f4f;">✅ Save All Changes</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <button type="button" class="btn btn-outline" style="padding:14px; font-size:14px; border-color:var(--coral); color:var(--coral); font-weight:800;" onclick="deleteJob()">🗑️ Delete Job</button>
+                    <button type="button" class="btn btn-outline" style="padding:14px; font-size:14px; font-weight:800;" onclick="closeEditModal()">❌ Cancel</button>
+                </div>
             </div>
         </form>
     </div>
@@ -753,8 +858,34 @@
     </div>
 </div>
 
+<div id="company-profile-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
+        <button onclick="document.getElementById('company-profile-modal').style.display='none'" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">🏢 Company Profile</h3>
+        <div id="company-profile-content">
+        </div>
+    </div>
+</div>
+
+<div id="candidate-profile-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
+        <button onclick="document.getElementById('candidate-profile-modal').style.display='none'" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">👨‍🔧 Candidate Profile</h3>
+        <div id="candidate-profile-content">
+        </div>
+    </div>
+</div>
+
 <script>
         // Utilities
+        function linkify(text) {
+            if (!text) return "";
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return '<a href="' + url + '" target="_blank" rel="noopener noreferrer" style="color:var(--coral); text-decoration:underline;">' + url + '</a>';
+            });
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -770,10 +901,95 @@
             return cookieValue;
         }
 
+        function toggleCandidateProfileEdit(isEditing) {
+            const form = document.getElementById('candidate-profile-form');
+            if(!form) return;
+            const inputs = form.querySelectorAll('input, select, textarea');
+            
+            // Linkify preview for social_links
+            const linksTextarea = document.getElementById('c-links');
+            let previewDiv = document.getElementById('c-links-preview');
+            if (!previewDiv) {
+                previewDiv = document.createElement('div');
+                previewDiv.id = 'c-links-preview';
+                previewDiv.style.cssText = 'padding: 12px; background: #f8f9ff; border-radius: 12px; font-size: 14px; min-height: 50px; white-space: pre-wrap;';
+                linksTextarea.parentNode.insertBefore(previewDiv, linksTextarea.nextSibling);
+            }
+
+            inputs.forEach(input => {
+                input.readOnly = !isEditing;
+                if (!isEditing) {
+                    input.style.backgroundColor = '#f8f9ff';
+                    input.style.borderColor = 'transparent';
+                    input.style.outline = 'none';
+                } else {
+                    input.style.backgroundColor = '';
+                    input.style.borderColor = '';
+                }
+            });
+
+            if (!isEditing) {
+                linksTextarea.style.display = 'none';
+                previewDiv.style.display = 'block';
+                previewDiv.innerHTML = linkify(linksTextarea.value) || '<i style="color:#999;">No links provided</i>';
+            } else {
+                linksTextarea.style.display = 'block';
+                previewDiv.style.display = 'none';
+            }
+
+            document.getElementById('c-save-btn').style.display = isEditing ? 'inline-flex' : 'none';
+            document.getElementById('c-edit-btn').style.display = isEditing ? 'none' : 'inline-flex';
+        }
+
+        function toggleEmployerProfileEdit(isEditing) {
+            const form = document.getElementById('employer-profile-form');
+            if(!form) return;
+            const inputs = form.querySelectorAll('input, select, textarea');
+
+            // Linkify preview for website_links
+            const linksTextarea = document.getElementById('e-links');
+            let previewDiv = document.getElementById('e-links-preview');
+            if (!previewDiv) {
+                previewDiv = document.createElement('div');
+                previewDiv.id = 'e-links-preview';
+                previewDiv.style.cssText = 'padding: 12px; background: #f8f9ff; border-radius: 12px; font-size: 14px; min-height: 50px; white-space: pre-wrap;';
+                linksTextarea.parentNode.insertBefore(previewDiv, linksTextarea.nextSibling);
+            }
+
+            inputs.forEach(input => {
+                input.readOnly = !isEditing;
+                if (!isEditing) {
+                    input.style.backgroundColor = '#f8f9ff';
+                    input.style.borderColor = 'transparent';
+                    input.style.outline = 'none';
+                } else {
+                    input.style.backgroundColor = '';
+                    input.style.borderColor = '';
+                }
+            });
+
+            if (!isEditing) {
+                linksTextarea.style.display = 'none';
+                previewDiv.style.display = 'block';
+                previewDiv.innerHTML = linkify(linksTextarea.value) || '<i style="color:#999;">No links provided</i>';
+            } else {
+                linksTextarea.style.display = 'block';
+                previewDiv.style.display = 'none';
+            }
+
+            document.getElementById('e-save-btn').style.display = isEditing ? 'inline-flex' : 'none';
+            document.getElementById('e-edit-btn').style.display = isEditing ? 'none' : 'inline-flex';
+        }
+
         async function apiCall(endpoint, method = 'GET', body = null) {
+            let token = getCookie('csrftoken');
+            if (!token) {
+                const input = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (input) token = input.value;
+            }
             const headers = {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': token
             };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
@@ -783,6 +999,7 @@
                 const err = await res.json().catch(()=>({error: 'API Error'}));
                 throw err;
             }
+            if (res.status === 204) return null;
             return await res.json();
         }
 
@@ -790,6 +1007,7 @@
         function showSection(id) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function switchAuthTab(type) {
@@ -814,6 +1032,32 @@
             }
         }
 
+        function postJobClick() {
+            if (currentUserRole === 'employer') {
+                showDashboard();
+            } else {
+                showSection('auth-section');
+            }
+        }
+
+        async function findJobNearMeClick() {
+            if (currentUserRole === 'candidate') {
+                const prof = await apiCall('candidate/profile').catch(() => null);
+                if (prof && prof.city) {
+                    showSection('home-feed');
+                    loadFeed(prof.city);
+                } else {
+                    alert('Please set your city in your profile first!');
+                    showProfile();
+                }
+            } else if (currentUserRole === 'employer') {
+                showSection('auth-section');
+                switchAuthTab('register');
+            } else {
+                showSection('auth-section');
+            }
+        }
+
         async function checkAuthAndInit() {
             try {
                 // Cache busting with timestamp
@@ -830,7 +1074,7 @@
             } catch(e) {}
 
             // Not logged in — show landing page
-            document.getElementById('public-nav').style.display = 'block';
+            document.getElementById('public-nav').style.display = 'flex';
             document.getElementById('user-controls').style.display = 'none';
             showSection('landing-page');
             authCheckDone = true;
@@ -856,7 +1100,7 @@
             currentUserRole = role;
             document.getElementById('public-nav').style.display = 'none';
             document.getElementById('user-controls').style.display = 'flex';
-            document.getElementById('welcome-msg').innerText = `Hello, ${username}`;
+            document.getElementById('welcome-msg').innerText = username;
             
             // If employer, load profile ID for ownership checks
             if (role === 'employer') {
@@ -906,7 +1150,7 @@
             renderFeed();
         }
 
-        async function loadFeed() {
+        async function loadFeed(filterCity = null) {
             try {
                 if (currentUserRole === 'candidate') {
                     const prof = await apiCall('candidate/profile').catch(() => null);
@@ -917,6 +1161,7 @@
                         return;
                     }
                     window.currentCandidateSkills = prof.skills;
+                    window.currentCandidateCity = prof.city;
                     document.getElementById('feed-tabs').style.display = 'flex';
                 } else if (currentUserRole === 'employer') {
                     const prof = await apiCall('employer/profile').catch(() => null);
@@ -932,8 +1177,17 @@
                     document.getElementById('feed-tabs').style.display = 'none';
                 }
 
-                cachedJobsFeed = await apiCall('jobs/feed');
+                const endpoint = filterCity ? `jobs/feed?city=${encodeURIComponent(filterCity)}` : 'jobs/feed';
+                cachedJobsFeed = await apiCall(endpoint);
                 renderFeed();
+                if (filterCity) {
+                   // Highlight that we are filtering
+                   const feedTitle = document.querySelector('#home-feed h2');
+                   if (feedTitle) feedTitle.innerText = `📍 Jobs in ${filterCity}`;
+                } else {
+                   const feedTitle = document.querySelector('#home-feed h2');
+                   if (feedTitle) feedTitle.innerText = `🔥 Global Jobs Feed`;
+                }
             } catch(e) { console.error('Error loading feed', e); }
         }
 
@@ -966,10 +1220,10 @@
                 list.innerHTML += `
                     <div class="job-card">
                         <div class="jc-top">
-                            <div class="jc-logo jcl-1">💼</div>
+                            <button class="jc-logo jcl-1" style="border:none; cursor:pointer;" onclick="viewCompanyProfile(${j.id})" title="View Company Profile">💼</button>
                             <div class="jc-info">
                                 <h3 style="margin-bottom:4px;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;">${j.title}</h3>
-                                <span style="font-size:13px;color:#999;">${j.company_name || 'N/A'} • Pin: ${j.pincode}</span>
+                                <span style="font-size:13px;color:#999;">${j.company_name || 'N/A'} • ${j.city || 'N/A'} (Pin: ${j.pincode})</span>
                             </div>
                         </div>
                         <div class="jc-tags" style="margin-bottom:12px;">
@@ -979,6 +1233,7 @@
                         <div style="font-size:13px; color:#666; margin-bottom:12px; padding:10px; background:var(--offwhite); border-radius:12px;">
                             <strong>Skills Needed:</strong> ${j.required_skills}
                             ${j.is_walk_in && j.walk_in_address ? `<div style="font-size:12px; margin-top:8px; padding:8px; background:#E8F5E9; border-radius:8px; color:#1b8c4f;">📍 <strong>Walk-In:</strong> ${j.walk_in_address}</div>` : ''}
+                            ${j.expires_at ? `<div style="font-size:12px; margin-top:8px; color:var(--coral);">⏰ <strong>Expires:</strong> ${new Date(j.expires_at).toLocaleString()}</div>` : ''}
                         </div>
                         <div class="jc-footer" style="justify-content: flex-start; gap: 8px; flex-wrap:wrap;">
                             ${applyBtnHtml}
@@ -1062,8 +1317,12 @@
                                     <span>🎯 Match: <strong>${a.match_score}%</strong></span>
                                     <span>📅 ${a.applied_at}</span>
                                 </div>
-                                <div style="margin-top:10px; padding:10px; background:var(--offwhite); border-radius:12px; font-size:13px; color:var(--dark);">
-                                    <strong>HR Contact:</strong> ${a.contact_name || 'N/A'} | <strong>Call:</strong> ${a.contact_phone || 'N/A'} | <strong>Email:</strong> ${a.contact_email || 'N/A'}
+                                <div style="margin-top:10px; padding:12px; background: ${a.status === 'Shortlisted' ? 'rgba(16, 185, 129, 0.1)' : 'var(--offwhite)'}; border-radius:12px; font-size:13px; color: ${a.status === 'Shortlisted' ? 'var(--dark)' : '#666'}; border: 1px dashed ${a.status === 'Shortlisted' ? 'var(--green)' : '#ccc'};">
+                                    ${a.status === 'Shortlisted' ? 
+                                        `<strong>HR Name:</strong> ${a.contact_name || 'N/A'} | <strong>Call:</strong> ${a.contact_phone || 'N/A'} | <strong>Email:</strong> ${a.contact_email || 'N/A'}
+                                         <div style="margin-top:8px;"><strong>Links:</strong> ${linkify(a.website_links) || 'N/A'}</div>` : 
+                                        `<span style="display:flex; align-items:center; gap:6px; color:#999;">🔒 <i>HR details will be unlocked once you are Shortlisted by the employer.</i></span>`
+                                    }
                                 </div>
                             </div>`;
                     }).join('');
@@ -1075,9 +1334,20 @@
                     document.getElementById('c-skills').value = profile.skills || '';
                     document.getElementById('c-experience').value = profile.experience || 0;
                     document.getElementById('c-pincode').value = profile.pincode || '';
+                    document.getElementById('c-city').value = profile.city || '';
                     document.getElementById('c-phone').value = profile.phone || '';
                     document.getElementById('c-contact-email').value = profile.contact_email || '';
+                    document.getElementById('c-about').value = profile.about || '';
+                    document.getElementById('c-links').value = profile.social_links || '';
                     window.currentCandidateSkills = profile.skills;
+                    
+                    if (profile.skills) {
+                        toggleCandidateProfileEdit(false);
+                    } else {
+                        toggleCandidateProfileEdit(true);
+                    }
+                } else {
+                    toggleCandidateProfileEdit(true);
                 }
             } catch (err) {
                 console.error('Failed to load candidate data', err);
@@ -1091,10 +1361,15 @@
                     skills: document.getElementById('c-skills').value,
                     experience: document.getElementById('c-experience').value,
                     pincode: document.getElementById('c-pincode').value,
+                    city: document.getElementById('c-city').value,
                     phone: document.getElementById('c-phone').value,
-                    contact_email: document.getElementById('c-contact-email').value
+                    contact_email: document.getElementById('c-contact-email').value,
+                    about: document.getElementById('c-about').value,
+                    social_links: document.getElementById('c-links').value
                 });
                 alert('Profile updated successfully!');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                toggleCandidateProfileEdit(false);
                 loadCandidateData();
             } catch (err) { alert('Error updating profile'); }
         };
@@ -1119,9 +1394,21 @@
                     window.currentEmployerProfileId = profile.id;
                     document.getElementById('e-company').value = profile.company_name || '';
                     document.getElementById('e-pincode').value = profile.pincode || '';
+                    document.getElementById('e-city').value = profile.city || '';
                     document.getElementById('e-contact-name').value = profile.contact_name || '';
                     document.getElementById('e-contact-phone').value = profile.contact_phone || '';
                     document.getElementById('e-contact-email').value = profile.contact_email || '';
+                    document.getElementById('e-about').value = profile.about || '';
+                    document.getElementById('e-links').value = profile.website_links || '';
+                    document.getElementById('e-org-details').value = profile.org_details || '';
+                    
+                    if (profile.company_name) {
+                        toggleEmployerProfileEdit(false);
+                    } else {
+                        toggleEmployerProfileEdit(true);
+                    }
+                } else {
+                    toggleEmployerProfileEdit(true);
                 }
 
                 // posted jobs
@@ -1155,10 +1442,11 @@
                                 <strong>Expected Skills:</strong> ${j.required_skills}<br>
                                 <strong>Total Applicants:</strong> ${j.applicants_count || 0}
                                 ${j.is_walk_in && j.walk_in_address ? `<div style="font-size:12px; margin-top:8px; padding:8px; background:#E8F5E9; border-radius:8px; color:#1b8c4f;">📍 <strong>Walk-In:</strong> ${j.walk_in_address}</div>` : ''}
+                                ${j.expires_at ? `<div style="font-size:12px; margin-top:8px; color:var(--coral);">⏰ <strong>Auto-Delete at:</strong> ${new Date(j.expires_at).toLocaleString()}</div>` : ''}
                             </div>
                             <div class="jc-footer" style="justify-content: flex-start; gap: 8px; flex-wrap:wrap;">
                                 <button class="jc-apply" onclick="viewCandidates(${j.id}, '${j.title}')">View Ranked Candidates (${j.applicants_count || 0})</button>
-                                <button class="jc-apply" style="background:var(--yellow); color:var(--dark);" onclick="editJob(${j.id}, '${(j.title || '').replace(/'/g,"\\'") }', '${(j.required_skills || '').replace(/'/g,"\\'") }', '${j.pincode}', ${j.salary || 0}, ${j.is_walk_in || false}, '${(j.walk_in_address || '').replace(/'/g,"\\'") }')">✏️ Edit Job</button>
+                                <button class="jc-apply" style="background:var(--yellow); color:var(--dark);" onclick="editJob(${j.id}, '${(j.title || '').replace(/'/g,"\\'") }', '${(j.required_skills || '').replace(/'/g,"\\'") }', '${j.pincode}', '${(j.city || '').replace(/'/g,"\\'") }', ${j.salary || 0}, ${j.is_walk_in || false}, '${(j.walk_in_address || '').replace(/'/g,"\\'") }')">✏️ Edit Job</button>
                             </div>
                         </div>
                     `;
@@ -1172,11 +1460,17 @@
                 await apiCall('employer/profile', 'POST', {
                     company_name: document.getElementById('e-company').value,
                     pincode: document.getElementById('e-pincode').value,
+                    city: document.getElementById('e-city').value,
                     contact_name: document.getElementById('e-contact-name').value,
                     contact_phone: document.getElementById('e-contact-phone').value,
-                    contact_email: document.getElementById('e-contact-email').value
+                    contact_email: document.getElementById('e-contact-email').value,
+                    about: document.getElementById('e-about').value,
+                    website_links: document.getElementById('e-links').value,
+                    org_details: document.getElementById('e-org-details').value
                 });
                 alert('Company Profile saved!');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                toggleEmployerProfileEdit(false);
             } catch (err) { alert('Error saving profile'); }
         };
 
@@ -1193,13 +1487,18 @@
                     title: document.getElementById('j-title').value,
                     required_skills: document.getElementById('j-skills').value,
                     pincode: document.getElementById('j-pincode').value,
+                    city: document.getElementById('j-city').value,
                     salary: salaryVal,
                     is_walk_in: isWalkIn,
-                    walk_in_address: isWalkIn ? document.getElementById('j-walk-in-address').value : ''
+                    walk_in_address: isWalkIn ? document.getElementById('j-walk-in-address').value : '',
+                    timer_value: document.getElementById('j-timer-value').value,
+                    timer_unit: document.getElementById('j-timer-unit').value
                 });
                 alert('Job Posted to the Global Feed!');
                 e.target.reset();
                 document.getElementById('j-walk-in-addr-group').style.display = 'none';
+                document.getElementById('j-timer-value').value = 0;
+                document.getElementById('j-timer-unit').value = 'hours';
                 loadEmployerData();
             } catch (err) { alert('Error posting job'); }
         };
@@ -1257,6 +1556,7 @@
                 list.innerHTML += `
                     <div class="job-card" style="border-left: 6px solid ${stColor};">
                         <div class="jc-top">
+                            <button class="jc-logo jcl-2" style="border:none; cursor:pointer;" onclick="viewCandidateProfile(${app.id})" title="View Candidate Profile">👨‍🔧</button>
                             <div class="jc-info" style="width:100%;">
                                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                     <h3 style="margin-bottom:4px;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;">${app.candidate_name}</h3>
@@ -1269,6 +1569,7 @@
                             <strong>Skills:</strong> ${app.candidate_skills}<br/>
                             <strong>Exp:</strong> ${app.candidate_experience || 0} yrs &bull; <strong>Pin:</strong> ${app.candidate_pincode || 'N/A'}<br/>
                             <strong>Contact:</strong> ${app.candidate_phone || 'No phone'} | ${app.candidate_contact_email || 'No email'}<br/>
+                            <strong>Portfolio/Links:</strong> ${linkify(app.candidate_social_links) || 'N/A'}<br/>
                             Status: <strong style="color: ${stColor}">${app.status}</strong>
                         </div>
                         <div class="jc-footer" style="justify-content: flex-start; gap: 8px;">
@@ -1290,42 +1591,63 @@
         // EDIT JOB logic
         let editingJobId = null;
 
-        async function editJob(id, title, skills, pincode, salary, is_walk_in, walk_in_address) {
+        async function editJob(id, title, skills, pincode, city, salary, is_walk_in, walk_in_address) {
             editingJobId = id;
             document.getElementById('edit-j-title').value = title || '';
             document.getElementById('edit-j-skills').value = skills || '';
             document.getElementById('edit-j-pincode').value = pincode || '';
+            document.getElementById('edit-j-city').value = city || '';
             document.getElementById('edit-j-salary').value = salary || 0;
             const walkInCheck = document.getElementById('edit-j-walk-in');
             walkInCheck.checked = !!is_walk_in;
             document.getElementById('edit-j-walk-in-addr-group').style.display = is_walk_in ? 'block' : 'none';
             document.getElementById('edit-j-walk-in-address').value = walk_in_address || '';
             
+            // Default reset for timer
+            document.getElementById('edit-j-timer-value').value = 0;
+            document.getElementById('edit-j-timer-unit').value = 'hours';
+            document.getElementById('edit-j-current-expiry-group').style.display = 'none';
+
             try {
-                const j = await apiCall(`employer/job/${id}/edit`, 'GET').catch(() => null);
-                // Fall back to feed data if dedicated GET not available
-                let jobData = j;
-                if (!jobData || jobData.error) {
-                    // Fetch from employer jobs list
-                    const jobs = await apiCall('employer/jobs');
-                    jobData = jobs.find(job => job.id === id);
-                }
+                const jobData = await apiCall(`employer/job/${id}/edit`, 'GET').catch(() => null);
                 if (jobData) {
                     document.getElementById('edit-j-title').value = jobData.title || '';
                     document.getElementById('edit-j-skills').value = jobData.required_skills || '';
                     document.getElementById('edit-j-pincode').value = jobData.pincode || '';
+                    document.getElementById('edit-j-city').value = jobData.city || '';
                     document.getElementById('edit-j-salary').value = jobData.salary || 0;
                     walkInCheck.checked = !!jobData.is_walk_in;
                     document.getElementById('edit-j-walk-in-addr-group').style.display = jobData.is_walk_in ? 'block' : 'none';
                     document.getElementById('edit-j-walk-in-address').value = jobData.walk_in_address || '';
+                    
+                    if (jobData.expires_at) {
+                        const expiryDate = new Date(jobData.expires_at);
+                        document.getElementById('edit-j-current-expiry').innerText = expiryDate.toLocaleString();
+                        document.getElementById('edit-j-current-expiry-group').style.display = 'block';
+                    }
                 }
             } catch(err) { console.error('Failed to load job for editing', err); }
-            document.getElementById('edit-job-modal').style.display = 'flex';
+            try {
+                const modal = document.getElementById('edit-job-modal');
+                if (modal) modal.style.display = 'flex';
+            } catch(e) { console.error('Modal failed to open', e); }
         }
 
         function closeEditModal() {
             document.getElementById('edit-job-modal').style.display = 'none';
             editingJobId = null;
+        }
+
+        async function deleteJob() {
+            if (!editingJobId) return;
+            if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) return;
+            try {
+                await apiCall(`employer/job/${editingJobId}/edit`, 'DELETE');
+                alert('Job deleted successfully!');
+                closeEditModal();
+                loadFeed();
+                if (currentUserRole === 'employer') loadEmployerData();
+            } catch (err) { alert('Error deleting job: ' + (err.error || JSON.stringify(err))); }
         }
 
         document.getElementById('edit-job-form').onsubmit = async (e) => {
@@ -1337,9 +1659,12 @@
                     title: document.getElementById('edit-j-title').value,
                     required_skills: document.getElementById('edit-j-skills').value,
                     pincode: document.getElementById('edit-j-pincode').value,
+                    city: document.getElementById('edit-j-city').value,
                     salary: document.getElementById('edit-j-salary').value,
                     is_walk_in: editWalkIn,
-                    walk_in_address: editWalkIn ? document.getElementById('edit-j-walk-in-address').value : ''
+                    walk_in_address: editWalkIn ? document.getElementById('edit-j-walk-in-address').value : '',
+                    timer_value: document.getElementById('edit-j-timer-value').value,
+                    timer_unit: document.getElementById('edit-j-timer-unit').value
                 });
                 alert('Job updated successfully!');
                 closeEditModal();
@@ -1363,7 +1688,13 @@
         async function checkSalary(jobId) {
             showAILoading('✨ AI Salary Fairness Check');
             try {
-                const res = await apiCall(`candidate/job/${jobId}/salary-check`, 'GET');
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 150000)
+                );
+                const res = await Promise.race([
+                    apiCall(`candidate/job/${jobId}/salary-check`, 'GET'),
+                    timeoutPromise
+                ]);
                 if (res.error) {
                     document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Error: ${res.message || res.error}</p>`;
                     return;
@@ -1383,14 +1714,25 @@
                     </div>
                 `;
             } catch (err) {
-                document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to fetch salary assessment. Ensure your profile is complete.</p>`;
+                if (err.isTimeout) {
+                    alert("No Internet Connection");
+                    document.getElementById('ai-modal').style.display = 'none';
+                } else {
+                    document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to fetch salary assessment. Ensure your profile is complete.</p>`;
+                }
             }
         }
 
         async function generateLearningPath(jobId) {
             showAILoading('📚 Personalized Learning Path');
             try {
-                const res = await apiCall(`candidate/job/${jobId}/learning-path`, 'POST');
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject({ error: 'No Internet Connection', isTimeout: true }), 150000)
+                );
+                const res = await Promise.race([
+                    apiCall(`candidate/job/${jobId}/learning-path`, 'POST'),
+                    timeoutPromise
+                ]);
                 if (res.error) {
                     document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Error: ${res.message || res.error}</p>`;
                     return;
@@ -1424,12 +1766,107 @@
                     </div>
                 `;
             } catch (err) {
-                document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to generate learning path. Ensure your profile has skills listed.</p>`;
+                if (err.isTimeout) {
+                    alert("No Internet Connection");
+                    document.getElementById('ai-modal').style.display = 'none';
+                } else {
+                    document.getElementById('ai-modal-content').innerHTML = `<p style="color:#ef4444;">Failed to generate learning path. Ensure your profile has skills listed.</p>`;
+                }
             }
         }
 
         // INIT
         checkAuthAndInit();
+
+        // Company Profile logic
+        async function viewCompanyProfile(jobId) {
+            document.getElementById('company-profile-modal').style.display = 'flex';
+            document.getElementById('company-profile-content').innerHTML = '<div style="text-align:center; padding: 2rem;"><p style="color:#666;">Loading profile...</p></div>';
+            try {
+                const res = await apiCall(`job/${jobId}/employer`);
+                if (res.error) {
+                    document.getElementById('company-profile-content').innerHTML = `<p style="color:var(--coral); text-align:center;">${res.error}</p>`;
+                    return;
+                }
+                
+                let html = `
+                    <div style="margin-bottom: 16px;">
+                        <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">${res.company_name || 'N/A'}</h4>
+                        <div style="color: #666; font-size: 14px;">📍 ${res.city || 'No city'} &bull; Pin: ${res.pincode || 'N/A'}</div>
+                    </div>
+                `;
+                if (res.about) {
+                    html += `<div style="margin-bottom: 16px;"><strong>About:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.about}</p></div>`;
+                }
+                if (res.org_details) {
+                    html += `<div style="margin-bottom: 16px;"><strong>Organization Details:</strong><p style="margin-top: 4px; font-size: 14px; color: #444;">${res.org_details}</p></div>`;
+                }
+                if (res.website_links) {
+                    html += `<div style="margin-bottom: 16px;"><strong>Website/Links:</strong><div style="margin-top: 4px; font-size: 14px;">${linkify(res.website_links)}</div></div>`;
+                }
+                
+                if (res.contact_name || res.contact_phone || res.contact_email) {
+                    html += `<div style="margin-top: 24px; padding: 12px; background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--green); border-radius: 12px;">
+                        <p style="color: var(--green); margin-bottom: 8px; font-weight: 800;">🔓 Shortlisted Contact Details</p>
+                        <div style="font-size: 14px;">
+                            <strong>HR Name:</strong> ${res.contact_name || 'N/A'} <br>
+                            <strong>Phone:</strong> ${res.contact_phone || 'N/A'} <br>
+                            <strong>Email:</strong> ${res.contact_email || 'N/A'}
+                        </div>
+                    </div>`;
+                } else {
+                    html += `<div style="margin-top: 24px; padding: 12px; background: var(--offwhite); border: 1px dashed #ccc; border-radius: 12px; font-size: 13px; color: #999;">
+                        🔒 <i>HR Contact details are hidden. They will be unlocked if you are Shortlisted by this employer.</i>
+                    </div>`;
+                }
+                
+                document.getElementById('company-profile-content').innerHTML = html;
+            } catch(err) {
+                document.getElementById('company-profile-content').innerHTML = `<p style="color:var(--coral); text-align:center;">Failed to load company profile.</p>`;
+            }
+        }
+
+        // Candidate Profile logic (Employer view)
+        function viewCandidateProfile(appId) {
+            const app = currentJobCandidates.find(a => a.id === appId);
+            if(!app) return;
+            
+            document.getElementById('candidate-profile-modal').style.display = 'flex';
+            
+            let stColor = app.status === 'Shortlisted' ? '#10b981' : (app.status === 'Rejected' ? '#ef4444' : '#f59e0b');
+            
+            let html = `
+                <div style="margin-bottom: 16px;">
+                    <h4 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">${app.candidate_name || 'N/A'}</h4>
+                    <div style="color: #666; font-size: 14px;">📍 ${app.candidate_city || 'No city'} &bull; Pin: ${app.candidate_pincode || 'N/A'}</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <strong>Experience:</strong>
+                    <p style="margin-top: 4px; font-size: 14px; color: #444;">${app.candidate_experience || 0} years</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <strong>Skills:</strong>
+                    <p style="margin-top: 4px; font-size: 14px; color: #444;">${app.candidate_skills || 'N/A'}</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <strong>Portfolio/Links:</strong>
+                    <div style="margin-top: 4px; font-size: 14px;">${linkify(app.candidate_social_links) || 'N/A'}</div>
+                </div>
+                
+                <div style="margin-top: 24px; padding: 12px; background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 12px;">
+                    <p style="margin-bottom: 8px; font-weight: 800;">Contact Details</p>
+                    <div style="font-size: 14px;">
+                        <strong>Phone:</strong> ${app.candidate_phone || 'N/A'} <br>
+                        <strong>Email:</strong> ${app.candidate_contact_email || 'N/A'}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px; font-size: 14px; color: #666;">
+                    Status: <strong style="color: ${stColor}">${app.status}</strong> &bull; Match: <strong>${(app.match_score || 0).toFixed(2)}%</strong>
+                </div>
+            `;
+            document.getElementById('candidate-profile-content').innerHTML = html;
+        }
 
     </script>
 </body>

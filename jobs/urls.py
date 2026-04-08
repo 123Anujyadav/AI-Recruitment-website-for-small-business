@@ -3,7 +3,8 @@ from .views import (
     RegisterView, LoginView, LogoutView, WhoAmIView,
     CandidateProfileView, MatchedJobsView, ApplyJobView, AllJobsView,
     EmployerProfileView, EmployerJobsView, RankedCandidatesView, ApplicationStatusView,
-    EditJobView, AISalaryAssessmentView, AILearningPathView, CandidateApplicationsView
+    EditJobView, AISalaryAssessmentView, AILearningPathView, CandidateApplicationsView,
+    PublicEmployerProfileView
 )
 
 urlpatterns = [
@@ -23,6 +24,8 @@ urlpatterns = [
     path('employer/profile', EmployerProfileView.as_view()),   # extra for completeness
     path('employer/job', EmployerJobsView.as_view()),          # post new job
     path('employer/jobs', EmployerJobsView.as_view()),         # get posted jobs
+    path('job/<int:job_id>/employer', PublicEmployerProfileView.as_view()),
+
     path('employer/job/<int:job_id>/ranked-candidates', RankedCandidatesView.as_view()),
     path('employer/application/<int:app_id>/status', ApplicationStatusView.as_view()),
     path('employer/job/<int:job_id>/edit', EditJobView.as_view()),

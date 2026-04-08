@@ -4,12 +4,20 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import authenticate, login, logout
 from django.middleware.csrf import get_token
+from django.utils import timezone
+from datetime import timedelta
 from .models import CandidateProfile, EmployerProfile, Job, Application
 from .serializers import (
     UserSerializer, CandidateProfileSerializer, EmployerProfileSerializer,
     JobSerializer, ApplicationSerializer
 )
 from . import ai_services
+
+def delete_expired_jobs():
+    """Deletes jobs that have passed their expiration timestamp."""
+    expired_jobs = Job.objects.filter(expires_at__lt=timezone.now())
+    if expired_jobs.exists():
+        expired_jobs.delete()
 
 class WhoAmIView(APIView):
     """Returns current authenticated user's role and username, or 401 if not logged in."""
@@ -28,6 +36,8 @@ class RegisterView(APIView):
             # password — calling set_password() again would double-hash it.
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Log error for better visibility during testing
+        print(f"[ERROR] Registration Invalid: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
@@ -57,7 +67,7 @@ class CandidateProfileView(APIView):
             return Response({'error': 'Only candidates can view this'}, status=403)
         profile, _ = CandidateProfile.objects.get_or_create(
             user=request.user,
-            defaults={'skills': '', 'pincode': '', 'experience': 0}
+            defaults={'skills': '', 'pincode': '', 'city': '', 'experience': 0}
         )
         serializer = CandidateProfileSerializer(profile)
         return Response(serializer.data)
@@ -67,7 +77,7 @@ class CandidateProfileView(APIView):
             return Response({'error': 'Only candidates can update profile'}, status=403)
         profile, created = CandidateProfile.objects.get_or_create(
             user=request.user,
-            defaults={'skills': '', 'pincode': '', 'experience': 0}
+            defaults={'skills': '', 'pincode': '', 'city': '', 'experience': 0}
         )
         serializer = CandidateProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
@@ -93,7 +103,11 @@ class AllJobsView(APIView):
     permission_classes = [AllowAny] # Or IsAuthenticated depending on if logged out users can see feed, let's say AllowAny
 
     def get(self, request):
+        delete_expired_jobs()
+        city = request.query_params.get('city')
         jobs = Job.objects.all().order_by('-created_at')
+        if city:
+            jobs = jobs.filter(city__icontains=city)
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
 
@@ -120,11 +134,13 @@ class ApplyJobView(APIView):
         matched = len(c_skills.intersection(j_skills))
 
         skill_score = (matched / total_req) * 70 if total_req > 0 else 70
+        is_same_city = str(profile.city).strip().lower() == str(job.city).strip().lower() and profile.city != ''
+        city_score = 20 if is_same_city else 0
 
         # ── Step 2: Determine if THIS candidate is same-pincode ──────────────
         is_same_pincode = str(profile.pincode).strip() == str(job.pincode).strip()
         location_score = 30 if is_same_pincode else 0
-        total_score = skill_score + location_score
+        total_score = skill_score + location_score + city_score
 
         # ── Step 3: Pincode-aware relative ranking ───────────────────────────
         #
@@ -185,7 +201,7 @@ class EmployerProfileView(APIView):
             return Response({'error': 'Only employers can view this'}, status=403)
         profile, _ = EmployerProfile.objects.get_or_create(
             user=request.user,
-            defaults={'company_name': '', 'pincode': ''}
+            defaults={'company_name': '', 'pincode': '', 'city': ''}
         )
         serializer = EmployerProfileSerializer(profile)
         return Response(serializer.data)
@@ -195,7 +211,7 @@ class EmployerProfileView(APIView):
             return Response({'error': 'Only employers can update profile'}, status=403)
         profile, created = EmployerProfile.objects.get_or_create(
             user=request.user,
-            defaults={'company_name': '', 'pincode': ''}
+            defaults={'company_name': '', 'pincode': '', 'city': ''}
         )
         serializer = EmployerProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
@@ -209,9 +225,10 @@ class EmployerJobsView(APIView):
     def get(self, request):
         if request.user.role != 'employer':
             return Response({'error': 'Only employers can view this'}, status=403)
+        delete_expired_jobs()
         profile, _ = EmployerProfile.objects.get_or_create(
             user=request.user,
-            defaults={'company_name': '', 'pincode': ''}
+            defaults={'company_name': '', 'pincode': '', 'city': ''}
         )
         jobs = Job.objects.filter(employer=profile)
         serializer = JobSerializer(jobs, many=True)
@@ -222,11 +239,25 @@ class EmployerJobsView(APIView):
             return Response({'error': 'Only employers can post jobs'}, status=403)
         profile, _ = EmployerProfile.objects.get_or_create(
             user=request.user,
-            defaults={'company_name': '', 'pincode': ''}
+            defaults={'company_name': '', 'pincode': '', 'city': ''}
         )
+        
+        timer_value = request.data.get('timer_value')
+        timer_unit = request.data.get('timer_unit', 'hours')
+        expires_at = None
+        
+        if timer_value and int(timer_value) > 0:
+            val = int(timer_value)
+            if timer_unit == 'hours':
+                expires_at = timezone.now() + timedelta(hours=val)
+            elif timer_unit == 'days':
+                expires_at = timezone.now() + timedelta(days=val)
+            elif timer_unit == 'months':
+                expires_at = timezone.now() + timedelta(days=val * 30)
+            
         serializer = JobSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(employer=profile)
+            serializer.save(employer=profile, expires_at=expires_at)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
@@ -270,10 +301,49 @@ class CandidateApplicationsView(APIView):
                 'match_score': round(app.match_score, 2),
                 'status': app.status,
                 'applied_at': app.created_at.strftime('%d %b %Y'),
-                'contact_name': app.job.employer.contact_name,
-                'contact_phone': app.job.employer.contact_phone,
-                'contact_email': app.job.employer.contact_email,
+                'contact_name': app.job.employer.contact_name if app.status == 'Shortlisted' else None,
+                'contact_phone': app.job.employer.contact_phone if app.status == 'Shortlisted' else None,
+                'contact_email': app.job.employer.contact_email if app.status == 'Shortlisted' else None,
+                'website_links': app.job.employer.website_links if app.status == 'Shortlisted' else None,
             })
+        return Response(data)
+
+class PublicEmployerProfileView(APIView):
+    """Returns public employer details for a specific job. Hides contact details unless the candidate is shortlisted."""
+    permission_classes = [AllowAny]
+
+    def get(self, request, job_id):
+        job = Job.objects.filter(id=job_id).first()
+        if not job:
+            return Response({'error': 'Job not found'}, status=404)
+            
+        is_shortlisted = False
+        if request.user and request.user.is_authenticated:
+            # If candidate, check if they are shortlisted for this job
+            if hasattr(request.user, 'candidate_profile'):
+                app = Application.objects.filter(job=job, candidate=request.user.candidate_profile).first()
+                if app and app.status == 'Shortlisted':
+                    is_shortlisted = True
+            # If same employer, show everything
+            elif hasattr(request.user, 'employer_profile'):
+                if job.employer == request.user.employer_profile:
+                    is_shortlisted = True
+
+        emp = job.employer
+        data = {
+            'company_name': emp.company_name,
+            'pincode': emp.pincode,
+            'city': emp.city,
+            'about': emp.about,
+            'website_links': emp.website_links,
+            'org_details': emp.org_details,
+        }
+
+        if is_shortlisted:
+            data['contact_name'] = emp.contact_name
+            data['contact_phone'] = emp.contact_phone
+            data['contact_email'] = emp.contact_email
+
         return Response(data)
 
 
@@ -303,6 +373,7 @@ class EditJobView(APIView):
 
     def get(self, request, job_id):
         if request.user.role != 'employer':
+            print(f"DEBUG: 403 Forbidden - User {request.user.username} role is {request.user.role}")
             return Response({'error': 'Only employers can edit jobs'}, status=403)
         profile = getattr(request.user, 'employer_profile', None)
         if not profile:
@@ -315,6 +386,7 @@ class EditJobView(APIView):
 
     def patch(self, request, job_id):
         if request.user.role != 'employer':
+            print(f"DEBUG: 403 Forbidden - User {request.user.username} role is {request.user.role}")
             return Response({'error': 'Only employers can edit jobs'}, status=403)
         profile = getattr(request.user, 'employer_profile', None)
         if not profile:
@@ -322,11 +394,40 @@ class EditJobView(APIView):
         job = Job.objects.filter(id=job_id, employer=profile).first()
         if not job:
             return Response({'error': 'Job not found or you do not own this job'}, status=404)
+            
+        timer_value = request.data.get('timer_value')
+        timer_unit = request.data.get('timer_unit', 'hours')
+        if timer_value is not None:
+            if int(timer_value) > 0:
+                val = int(timer_value)
+                if timer_unit == 'hours':
+                    job.expires_at = timezone.now() + timedelta(hours=val)
+                elif timer_unit == 'days':
+                    job.expires_at = timezone.now() + timedelta(days=val)
+                elif timer_unit == 'months':
+                    job.expires_at = timezone.now() + timedelta(days=val * 30)
+            else:
+                job.expires_at = None
+            job.save()
+
         serializer = JobSerializer(job, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+    def delete(self, request, job_id):
+        if request.user.role != 'employer':
+            print(f"DEBUG: 403 Forbidden - User {request.user.username} role is {request.user.role}")
+            return Response({'error': 'Only employers can delete jobs'}, status=403)
+        profile = getattr(request.user, 'employer_profile', None)
+        if not profile:
+            return Response({'error': 'Employer profile not found'}, status=404)
+        job = Job.objects.filter(id=job_id, employer=profile).first()
+        if not job:
+            return Response({'error': 'Job not found or you do not own this job'}, status=404)
+        job.delete()
+        return Response({'message': 'Job deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 
 class AISalaryAssessmentView(APIView):
