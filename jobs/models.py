@@ -63,6 +63,7 @@ class EmployerProfile(models.Model):
 class Job(models.Model):
     employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE, related_name='jobs')
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default='', help_text="Optional job description")
     required_skills = models.TextField(help_text="Comma separated required skills")
     pincode = models.CharField(
         max_length=6,
