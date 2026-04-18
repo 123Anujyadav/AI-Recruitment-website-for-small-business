@@ -99,3 +99,38 @@ def generate_learning_path(job_title, job_skills, candidate_skills):
         return json.loads(text.strip())
     except Exception as e:
         return {"error": str(e), "topics": [], "message": "Failed to generate learning path."}
+
+def analyze_resume(resume_text):
+    """
+    Uses Gemini to extract skills, experience, and provide an ATS score and summary
+    from a raw resume text.
+    """
+    try:
+        model = get_model()
+    except ValueError as e:
+        return {"error": str(e), "status": "Error", "message": "API key missing."}
+
+    prompt = f"""
+    You are an expert ATS (Applicant Tracking System) and HR Recruiter.
+    Parse the following raw resume text and extract the key information.
+    
+    Resume Text:
+    {resume_text}
+    
+    Return the extracted details STRICTLY in JSON format with the following keys:
+    "skills": A comma-separated string of all technical and soft skills found.
+    "experience_years": A single integer representing the total years of professional experience. If none found, return 0.
+    "ats_score": A float out of 100 representing the resume's overall strength (e.g. 85.5). Evaluate it based on clarity, action verbs, and impact.
+    "summary": A 2-3 sentence summary of the candidate's profile, highlighting their strongest points and biggest weaknesses.
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.endswith("```"):
+            text = text[:-3]
+        return json.loads(text.strip())
+    except Exception as e:
+        return {"error": str(e), "status": "Error", "message": "Failed to analyze resume."}

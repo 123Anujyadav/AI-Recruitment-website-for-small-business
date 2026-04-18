@@ -143,3 +143,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # Session settings for fresh starts
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 3600  # 1 hour
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

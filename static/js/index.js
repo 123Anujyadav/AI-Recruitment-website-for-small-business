@@ -475,6 +475,22 @@
                     } else {
                         toggleCandidateProfileEdit(true);
                     }
+                    
+                    if (profile.resume_ats_score || profile.resume_file) {
+                        document.getElementById('resume-analysis-result').style.display = 'block';
+                        document.getElementById('ra-score').innerText = `Score: ${profile.resume_ats_score || 0}/100`;
+                        document.getElementById('ra-exp').innerText = profile.resume_experience || 0;
+                        document.getElementById('ra-skills').innerText = profile.resume_parsed_skills || 'None extracted';
+                        document.getElementById('ra-summary').innerText = profile.resume_summary || 'No summary available.';
+                        if (profile.resume_file) {
+                            document.getElementById('ra-download-btn').href = profile.resume_file;
+                            document.getElementById('ra-download-btn').style.display = 'block';
+                        } else {
+                            document.getElementById('ra-download-btn').style.display = 'none';
+                        }
+                    } else {
+                        document.getElementById('resume-analysis-result').style.display = 'none';
+                    }
                 } else {
                     toggleCandidateProfileEdit(true);
                 }
@@ -501,6 +517,50 @@
                 toggleCandidateProfileEdit(false);
                 loadCandidateData();
             } catch (err) { alert('Error updating profile'); }
+        };
+
+        document.getElementById('candidate-resume-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('r-resume-file');
+            if (fileInput.files.length === 0) return;
+            
+            const btn = document.getElementById('r-upload-btn');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ Analyzing...';
+            btn.disabled = true;
+
+            let token = getCookie('csrftoken');
+            if (!token) {
+                const input = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (input) token = input.value;
+            }
+
+            const formData = new FormData();
+            formData.append('resume_file', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/api/candidate/resume/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': token
+                    },
+                    body: formData
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    alert(data.error || 'Failed to analyze resume');
+                } else {
+                    alert('Resume analyzed successfully!');
+                    loadCandidateData(); // refresh
+                }
+            } catch(error) {
+                alert('Connection error while analyzing resume.');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         };
 
         async function applyJob(id) {
@@ -975,6 +1035,22 @@
                     <strong>Portfolio/Links:</strong>
                     <div style="margin-top: 4px; font-size: 14px;">${linkify(app.candidate_social_links) || 'N/A'}</div>
                 </div>
+
+                ${app.candidate_resume_ats_score || app.candidate_resume_file ? `
+                <div style="margin-bottom: 16px; padding: 16px; border-radius: 12px; background: rgba(142, 45, 226, 0.05); border: 1px solid rgba(142, 45, 226, 0.2);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                        <h4 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;margin:0;color:var(--purple);">✨ AI Resume Analysis</h4>
+                        <span style="font-weight:900; background:var(--purple); color:white; padding:4px 12px; border-radius:20px; font-size:14px;">ATS Score: ${app.candidate_resume_ats_score || 0}/100</span>
+                    </div>
+                    <strong>Summary:</strong>
+                    <p style="margin-top: 4px; font-size: 14px; color: #444; line-height:1.5;">${app.candidate_resume_summary || 'No summary available.'}</p>
+                    ${app.candidate_resume_file ? `<a href="${app.candidate_resume_file}" target="_blank" class="btn btn-outline" style="display:block; text-align:center; margin-top:16px; padding:8px; font-size:14px;">⬇️ View Original Resume</a>` : ''}
+                </div>
+                ` : `
+                <div style="margin-bottom: 16px; padding: 12px; background: var(--offwhite); border-radius: 12px; font-size: 13px; color: #999;">
+                    📄 No uploaded resume for this candidate.
+                </div>
+                `}
                 
                 <div style="margin-top: 24px; padding: 12px; background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 12px;">
                     <p style="margin-bottom: 8px; font-weight: 800;">Contact Details</p>

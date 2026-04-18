@@ -4,7 +4,7 @@ from .views import (
     CandidateProfileView, MatchedJobsView, ApplyJobView, AllJobsView,
     EmployerProfileView, EmployerJobsView, RankedCandidatesView, ApplicationStatusView,
     EditJobView, AISalaryAssessmentView, AILearningPathView, CandidateApplicationsView,
-    PublicEmployerProfileView
+    PublicEmployerProfileView, AIResumeAnalysisView
 )
 
 urlpatterns = [
@@ -16,6 +16,7 @@ urlpatterns = [
     # Candidate APIs
     path('candidate/profile', CandidateProfileView.as_view()),
     path('candidate/matched-jobs', MatchedJobsView.as_view()),
+    path('candidate/resume/analyze', AIResumeAnalysisView.as_view()),
     path('candidate/apply', ApplyJobView.as_view()),
     path('candidate/applications', CandidateApplicationsView.as_view()),
     path('candidate/job/<int:job_id>/salary-check', AISalaryAssessmentView.as_view()),

@@ -29,6 +29,7 @@ class CandidateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateProfile
         fields = '__all__'
+        read_only_fields = ['resume_text', 'resume_parsed_skills', 'resume_experience', 'resume_ats_score', 'resume_summary']
 
     def validate_pincode(self, value):
         if not value.isdigit() or len(value) != 6:
@@ -89,6 +90,9 @@ class ApplicationSerializer(serializers.ModelSerializer):
     candidate_city = serializers.CharField(source='candidate.city', read_only=True)
     candidate_social_links = serializers.CharField(source='candidate.social_links', read_only=True)
     candidate_eval_score = serializers.FloatField(source='match_score', read_only=True)
+    candidate_resume_ats_score = serializers.FloatField(source='candidate.resume_ats_score', read_only=True)
+    candidate_resume_summary = serializers.CharField(source='candidate.resume_summary', read_only=True)
+    candidate_resume_file = serializers.FileField(source='candidate.resume_file', read_only=True)
     job_title = serializers.CharField(source='job.title', read_only=True)
     class Meta:
         model = Application

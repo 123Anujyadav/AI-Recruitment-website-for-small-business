@@ -480,3 +480,57 @@ class AILearningPathView(APIView):
         
         return Response(learning_path)
 
+import PyPDF2
+
+class AIResumeAnalysisView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role != 'candidate':
+            return Response({"error": "Only candidates can upload resumes."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            profile = getattr(request.user, 'candidate_profile')
+        except AttributeError:
+            return Response({"error": "Candidate profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        resume_file = request.FILES.get('resume_file')
+        
+        if resume_file:
+            # Handle PDF extraction
+            try:
+                reader = PyPDF2.PdfReader(resume_file)
+                extracted_text = ""
+                for page in reader.pages:
+                    extracted_text += page.extract_text() or ""
+                
+                # Check if we successfully extracted anything
+                if not extracted_text.strip():
+                     return Response({"error": "No parseable text found in PDF."}, status=status.HTTP_400_BAD_REQUEST)
+
+                profile.resume_file = resume_file
+                profile.resume_text = extracted_text
+            except Exception as e:
+                 return Response({"error": f"Failed to read PDF. Ensure it is a valid PDF document. Details: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "No resume file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Analyze extracted text
+        analysis = ai_services.analyze_resume(profile.resume_text)
+        if "error" in analysis and "status" in analysis and analysis["status"] == "Error":
+            # Some error happened in ai service
+            return Response({"error": analysis["message"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        profile.resume_parsed_skills = analysis.get("skills", "")
+        profile.resume_experience = analysis.get("experience_years", 0)
+        profile.resume_ats_score = analysis.get("ats_score", 0.0)
+        profile.resume_summary = analysis.get("summary", "")
+        profile.save()
+
+        return Response({
+            "message": "Resume analyzed successfully",
+            "skills": profile.resume_parsed_skills,
+            "experience": profile.resume_experience,
+            "ats_score": profile.resume_ats_score,
+            "summary": profile.resume_summary
+        }, status=status.HTTP_200_OK)

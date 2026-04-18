@@ -287,6 +287,33 @@
                 <button type="submit" id="c-save-btn" class="btn">💾 Save Profile</button>
             </form>
         </div>
+
+        <div class="glass-card" style="margin-top: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin:0;">📄 AI Resume Analysis</h3>
+            </div>
+            
+            <form id="candidate-resume-form" style="margin-bottom: 24px;">
+                <p style="font-size: 14px; color: #666; margin-bottom: 12px;">Upload your resume to automatically extract skills, years of experience, and get an ATS match score. Employers will be able to see your ATS score and resume summary.</p>
+                <div class="form-group">
+                    <label>Upload Resume (PDF format)</label>
+                    <input type="file" id="r-resume-file" accept=".pdf" required style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee;">
+                </div>
+                <button type="submit" id="r-upload-btn" class="btn">🚀 Upload & Analyze with AI</button>
+            </form>
+
+            <div id="resume-analysis-result" style="display:none; padding: 20px; border-radius: 12px; background: rgba(142, 45, 226, 0.05); border: 1px solid rgba(142, 45, 226, 0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <h4 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;margin:0;color:var(--purple);">✨ AI Analysis Results</h4>
+                    <span id="ra-score" style="font-weight:900; background:var(--purple); color:white; padding:4px 12px; border-radius:20px; font-size:14px;">Score: 0/100</span>
+                </div>
+                <p style="font-size:14px; margin-bottom:8px;"><strong>Years of Experience:</strong> <span id="ra-exp"></span></p>
+                <p style="font-size:14px; margin-bottom:8px;"><strong>Parsed Skills:</strong> <span id="ra-skills"></span></p>
+                <p style="font-size:14px; margin-bottom:0; line-height:1.5;"><strong>Summary:</strong> <span id="ra-summary"></span></p>
+                
+                <a id="ra-download-btn" href="#" target="_blank" class="btn btn-outline" style="display:block; text-align:center; margin-top:20px; padding:8px; font-size:14px;">⬇️ View Uploaded Resume</a>
+            </div>
+        </div>
     </div>
 </main>
 
