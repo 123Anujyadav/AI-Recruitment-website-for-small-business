@@ -93,9 +93,10 @@ TalentAI_MVP/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/adityapaswan568/TalentAI_MVP.git
+git clone https://github.com/Anujyadav123/TalentAI_MVP.git
 cd TalentAI_MVP
 ```
+
 
 ### 2. Set Up Environment Variables
 
