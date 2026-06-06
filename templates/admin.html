@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TalentAI — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="badge">⚡ TalentAI</div>
+      <p>Admin Control Panel</p>
+    </div>
+    <div class="error-msg" id="login-error"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="admin-user" placeholder="admin username" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="admin-pass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In to Admin Panel</button>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div id="app">
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand"><span class="dot"></span>TalentAI</div>
+        <div class="admin-badge">Admin Panel</div>
+      </div>
+      <nav>
+        <div class="nav-section">Overview</div>
+        <div class="nav-item active" onclick="showSection('overview',this)" id="nav-overview">
+          <span class="icon">📊</span> Dashboard
+        </div>
+        <div class="nav-section">Management</div>
+        <div class="nav-item" onclick="showSection('users',this)" id="nav-users">
+          <span class="icon">👥</span> Users
+        </div>
+        <div class="nav-item" onclick="showSection('jobs',this)" id="nav-jobs">
+          <span class="icon">💼</span> Jobs
+        </div>
+        <div class="nav-item" onclick="showSection('applications',this)" id="nav-applications">
+          <span class="icon">📋</span> Applications
+        </div>
+        <div class="nav-item" onclick="showSection('candidates',this)" id="nav-candidates">
+          <span class="icon">🎯</span> Candidates
+        </div>
+        <div class="nav-item" onclick="showSection('employers',this)" id="nav-employers">
+          <span class="icon">🏢</span> Employers
+        </div>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="user-info">
+          <div class="avatar" id="avatar-initials">A</div>
+          <div class="meta">
+            <div class="name" id="sidebar-username">Admin</div>
+            <div class="role">System Administrator</div>
+          </div>
+          <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 id="page-title">Dashboard</h1>
+          <div class="sub" id="page-sub">Welcome back — TalentAI Admin</div>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- OVERVIEW -->
+        <div class="section active" id="section-overview">
+          <div class="stats-grid" id="stats-grid">
+            <div class="loading"><div class="spinner"></div> Loading stats…</div>
+          </div>
+          <div class="chart-container" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom: 32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+              <h3 style="font-size:16px; font-weight:600; color:var(--text);">Platform Analytics</h3>
+              <select id="chartType" class="status-sel" style="width: auto;" onchange="renderChart()">
+                <option value="bar">Bar Chart</option>
+                <option value="pie">Pie Chart</option>
+              </select>
+            </div>
+            <div style="height: 320px; width: 100%; position: relative;">
+              <canvas id="statsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- USERS -->
+        <div class="section" id="section-users">
+          <div class="section-head">
+            <h2>All Users</h2>
+            <button class="btn-sm btn-accent" onclick="openUserModal()">+ Add User</button>
+          </div>
+          <div class="table-wrap"><div id="users-table"><div class="loading"><div class="spinner"></div> Loading…</div></div></div>
+        </div>
+
+        <!-- JOBS -->
+        <div class="section" id="section-jobs">
+          <div class="section-head">
+            <h2>All Jobs</h2>
+            <button class="btn-sm btn-accent" onclick="openJobModal()">+ Add Job</button>
+          </div>
+          <div class="table-wrap"><div id="jobs-table"><div class="loading"><div class="spinner"></div> Loading…</div></div></div>
+        </div>
+
+        <!-- APPLICATIONS -->
+        <div class="section" id="section-applications">
+          <div class="section-head"><h2>All Applications</h2></div>
+          <div class="table-wrap"><div id="applications-table"><div class="loading"><div class="spinner"></div> Loading…</div></div></div>
+        </div>
+
+        <!-- CANDIDATES -->
+        <div class="section" id="section-candidates">
+          <div class="section-head"><h2>Candidate Profiles</h2></div>
+          <div class="table-wrap"><div id="candidates-table"><div class="loading"><div class="spinner"></div> Loading…</div></div></div>
+        </div>
+
+        <!-- EMPLOYERS -->
+        <div class="section" id="section-employers">
+          <div class="section-head"><h2>Employer Profiles</h2></div>
+          <div class="table-wrap"><div id="employers-table"><div class="loading"><div class="spinner"></div> Loading…</div></div></div>
+        </div>
+
+      </div><!-- /content -->
+    </main>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<!-- User Modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="user-modal-title">Add User</h3>
+      <button class="modal-close" onclick="closeModal('user-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="um-id"/>
+      <div class="form-group"><label>Username</label><input type="text" id="um-username" placeholder="username"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="um-email" placeholder="email@example.com"/></div>
+      <div class="form-group"><label>Password <span style="color:var(--muted);font-weight:400">(leave blank to keep)</span></label><input type="password" id="um-password" placeholder="new password"/></div>
+      <div class="form-group"><label>Role</label>
+        <select id="um-role"><option value="candidate">Candidate</option><option value="employer">Employer</option></select>
+      </div>
+      <div class="form-group">
+        <label>Staff Access</label>
+        <select id="um-staff" onchange="toggleRoleSelect()"><option value="false">No</option><option value="true">Yes (Admin)</option></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('user-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal-overlay" id="job-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="job-modal-title">Add Job</h3>
+      <button class="modal-close" onclick="closeModal('job-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="jm-id"/>
+      <div class="form-group"><label>Job Title</label><input type="text" id="jm-title" placeholder="e.g. Frontend Developer"/></div>
+      <div class="form-group"><label>Required Skills <span style="color:var(--muted);font-weight:400">(comma separated)</span></label><input type="text" id="jm-skills" placeholder="Python, Django, React"/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="jm-pincode" placeholder="110001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
+      <div class="form-group"><label>Monthly Salary (₹ INR)</label><input type="text" id="jm-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 500000" required/></div>
+      <div class="form-group"><label>Employer Profile ID</label><input type="number" id="jm-employer" placeholder="employer profile id"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('job-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveJob()">Save Job</button>
+    </div>
+  </div>
+</div>
+
+<!-- Candidate Modal -->
+<div class="modal-overlay" id="candidate-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Edit Candidate Profile</h3>
+      <button class="modal-close" onclick="closeModal('candidate-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cm-id"/>
+      <div class="form-group"><label>Skills <span style="color:var(--muted);font-weight:400">(comma separated)</span></label><input type="text" id="cm-skills"/></div>
+      <div class="form-group"><label>Experience (years)</label><input type="number" id="cm-exp"/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="cm-pincode" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('candidate-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveCandidate()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employer Modal -->
+<div class="modal-overlay" id="employer-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Edit Employer Profile</h3>
+      <button class="modal-close" onclick="closeModal('employer-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="em-id"/>
+      <div class="form-group"><label>Company Name</label><input type="text" id="em-company"/></div>
+      <div class="form-group"><label>Pincode</label><input type="text" id="em-pincode" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
+      <div class="form-group"><label>HR Name</label><input type="text" id="em-contact-name" placeholder="HR Name"/></div>
+      <div class="form-group"><label>HR Contact</label><input type="text" id="em-contact-phone" placeholder="HR Phone" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"/></div>
+      <div class="form-group"><label>HR Email</label><input type="email" id="em-contact-email" placeholder="hr@company.com"/></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('employer-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveEmployer()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="{% static 'js/admin.js' %}"></script>
+</body>
+</html>

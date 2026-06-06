@@ -1,0 +1,568 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalentAI MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+
+<nav>
+  {% csrf_token %}
+  <a class="logo" onclick="homeClick()"><span class="logo-bubble">T</span> TalentAI</a>
+  
+  <div id="public-nav" style="display: flex; align-items: center;">
+      <ul>
+        <li><a onclick="showSection('landing-page')">About</a></li>
+        <li><a onclick="showSection('auth-section')">Log in</a></li>
+      </ul>
+      <button class="nav-cta" style="margin-left: 16px;" onclick="showSection('auth-section'); switchAuthTab('register');">🚀 Get Started</button>
+  </div>
+
+  <div id="user-controls" style="display: none; align-items: center;">
+      <ul>
+          <li><a onclick="showSection('landing-page')">Home</a></li>
+          <li><a onclick="showSection('home-feed'); loadFeed();">Feed</a></li>
+          <li><a id="nav-dashboard" onclick="showDashboard()">Dashboard</a></li>
+      </ul>
+      <div class="nav-profile" onclick="showProfile()" title="View my profile">
+          <div id="nav-avatar-circle" class="nav-avatar-circle"></div>
+          <span id="welcome-msg" class="nav-username"></span>
+      </div>
+      <button class="nav-pill-lang" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- 1. Landing Page -->
+<main id="landing-page" class="view-section active">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-text">
+        <div class="emoji-title">🎯 AI-Powered Local Hiring</div>
+        <h1>Find Great<br>Staff <span class="squiggle">Nearby</span></h1>
+        <p>Post jobs, screen candidates automatically, and hire the best people for your hotel, shop, or business — all in one place.</p>
+        <div class="hero-actions">
+          <button class="btn" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #d94f4f;" onclick="findJobNearMeClick()">🔍 Find Jobs Near Me</button>
+          <button class="big-btn-alt" style="padding:16px 36px; font-size:17px; box-shadow:0 8px 0 #e5c200;" onclick="postJobClick()">📋 Post a Job</button>
+        </div>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="feature-badge fb-1">
+          <div class="feat-icon">🎯</div>
+          <div>Instant AI Matching</div>
+        </div>
+        <div class="feature-badge fb-2">
+          <div class="feat-icon">📍</div>
+          <div>Local Pincode Hiring</div>
+        </div>
+        <div class="feature-badge fb-3">
+          <div class="feat-icon">⚡</div>
+          <div>Zero Manual Screening</div>
+        </div>
+        <div class="desktop-container">
+          <div class="desktop-wrap">
+            <div class="desktop-top-bar">
+              <div class="desktop-dot dd-red"></div>
+              <div class="desktop-dot dd-yellow"></div>
+              <div class="desktop-dot dd-green"></div>
+            </div>
+            <div class="desktop-screen">
+              <div class="desktop-header">
+                🎯 AI Matcher Dashboard
+                <div class="desktop-header-badge">Live Updates</div>
+              </div>
+              <div class="desktop-body">
+                <div class="desktop-search">🔍 Auto-fetching latest candidates nearby...</div>
+                <div class="desktop-jobs">
+                  <div class="desktop-job">
+                    <div class="dj-top">
+                      <div class="dj-ico dj-ico-1">🏨</div>
+                      <div>
+                        <div class="dj-title">Ravi Kumar</div>
+                        <div class="dj-co">Front Desk Exp: 2yrs</div>
+                      </div>
+                      <div class="dj-match">92% Match</div>
+                    </div>
+                    <div class="dj-tags">
+                      <span class="dj-tag dj-tag-a">Fits Salary</span>
+                      <span class="dj-tag dj-tag-b">Local</span>
+                    </div>
+                  </div>
+                  <div class="desktop-job">
+                    <div class="dj-top">
+                      <div class="dj-ico dj-ico-2">🛒</div>
+                      <div>
+                        <div class="dj-title">Sneha Verma</div>
+                        <div class="dj-co">Retail & Sales</div>
+                      </div>
+                      <div class="dj-match" style="background:var(--green); box-shadow: 0 2px 0 #04b385;">85% Match</div>
+                    </div>
+                    <div class="dj-tags">
+                      <span class="dj-tag dj-tag-c">Walk-in Ready</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="desktop-base"></div>
+          </div>
+          <div class="desktop-stand"></div>
+          <div class="desktop-foot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <section class="how">
+      <div class="how-header">
+        <h2>How does it work? 🤔</h2>
+        <p>Mathematical matching system removes completely the need for manual screening.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-circle sc-1">👤</div>
+          <h3>Create Profile</h3>
+          <p>Candidates add their skills and pincode. Employers post their requirements.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-2">🔍</div>
+          <h3>AI Matching</h3>
+          <p>Our algorithm instantly calculates compatibility between skills and requirements.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-3">🤖</div>
+          <h3>Ranked Results</h3>
+          <p>Employers see a neatly ranked list of best matches - skip the bad CVs entirely.</p>
+        </div>
+        <div class="how-step">
+          <div class="step-circle sc-4">🎉</div>
+          <h3>Hire Fast</h3>
+          <p>Shortlist candidates with one click. Everything moves blazingly fast.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-banner">
+      <h2>Ready to hire your <span>dream team</span>?</h2>
+      <div class="cta-btns">
+      </div>
+    </div>
+</main>
+
+<!-- 2. Auth Section -->
+<main id="auth-section" class="view-section">
+    <div style="height:40px;"></div>
+    <div class="glass-card auth-forms">
+        <div style="text-align:center; margin-bottom:24px;">
+            <h2 style="font-family:'Nunito',sans-serif; font-weight:900; color:var(--dark);">Welcome to TalentAI 👋</h2>
+            <p style="color:#666; font-size:14px; margin-top:4px;">Log in or create a new account to continue.</p>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchAuthTab('login')" style="flex:1; text-align:center;">Login</div>
+            <div class="tab" onclick="switchAuthTab('register')" style="flex:1; text-align:center;">Register</div>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="l-username" required placeholder="e.g. aditya">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="l-password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">⚡ Login Securely</button>
+        </form>
+
+        <form id="register-form" style="display: none;">
+            <div class="form-group">
+                <label>I am a...</label>
+                <select id="r-role">
+                    <option value="candidate">👩‍💼 Candidate (Looking for Jobs)</option>
+                    <option value="employer">🏢 Employer (Hiring Staff)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="r-username" required placeholder="Choose a username">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="r-email" required placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="r-password" required placeholder="Create a strong password">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">🎉 Create Account</button>
+        </form>
+    </div>
+</main>
+
+<!-- 3. Home Feed (For Both) -->
+<main id="home-feed" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:16px;">🔥 Global Jobs Feed</h2>
+        <div class="tabs" id="feed-tabs" style="display:none; margin-bottom: 24px;">
+            <div class="tab active" id="tab-all-jobs" onclick="switchFeedTab('all')" style="flex:1; text-align:center;">🌐 All Jobs</div>
+            <div class="tab" id="tab-recommended" onclick="switchFeedTab('recommended')" style="flex:1; text-align:center;">⭐ Recommended</div>
+        </div>
+        <div id="all-jobs-feed" style="display:flex; flex-direction:column; gap:16px;">
+            <!-- Feed generated here -->
+        </div>
+    </div>
+</main>
+
+<!-- 4. Candidate Dashboard -->
+<main id="candidate-dashboard" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">📋 My Applications</h2>
+
+        <!-- Stat card -->
+        <div style="display: flex; gap: 16px; margin-bottom: 28px; justify-content: center;">
+            <div class="glass-card" style="min-width: 180px; text-align: center; padding: 20px 32px;">
+                <h3 style="font-size: 13px; color: #999; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;">Jobs Applied</h3>
+                <p id="c-stat-applied" style="font-size: 40px; font-weight: 900; color: var(--purple); margin: 0; font-family:'Nunito',sans-serif;">0</p>
+            </div>
+        </div>
+
+        <!-- Applied Jobs List -->
+        <div class="glass-card">
+            <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin-bottom:20px;">🗂️ All Applied Jobs</h3>
+            <div id="applied-jobs-list">
+                <p style="color:#666; text-align:center; padding: 24px 0;">Loading your applications...</p>
+            </div>
+        </div>
+        </div>
+    </div>
+</main>
+
+<!-- 4.1 Candidate Profile Section -->
+<main id="candidate-profile" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">👤 My Profile</h2>
+        
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin:0;">Profile Information</h3>
+                <button id="c-edit-btn" type="button" class="btn btn-outline" style="display:none; padding:8px 16px; font-size:14px;" onclick="toggleCandidateProfileEdit(true)">✏️ Edit Profile</button>
+            </div>
+            <form id="candidate-profile-form">
+                <div class="form-group">
+                    <label>Skills (Comma separated)</label>
+                    <input type="text" id="c-skills" placeholder="e.g. Python, Django, React" required>
+                </div>
+                <div class="form-group">
+                    <label>Years of Experience</label>
+                    <input type="number" id="c-experience" min="0" placeholder="e.g. 2" required>
+                </div>
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" id="c-pincode" placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="c-city" placeholder="e.g. Lucknow" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number (for employers to contact you)</label>
+                    <input type="text" id="c-phone" placeholder="e.g. 9876543210" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="form-group">
+                    <label>Contact Email (for employers to contact you)</label>
+                    <input type="email" id="c-contact-email" placeholder="e.g. candidate@email.com">
+                </div>
+                <div class="form-group">
+                    <label>About Me (Bio & Background)</label>
+                    <textarea id="c-about" rows="3" placeholder="Tell us about yourself and your professional journey" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Links / Portfolio (LinkedIn, GitHub, etc.)</label>
+                    <textarea id="c-links" rows="2" placeholder="Paste your profile links here (one per line)" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <button type="submit" id="c-save-btn" class="btn">💾 Save Profile</button>
+            </form>
+        </div>
+
+        <div class="glass-card" style="margin-top: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:20px;margin:0;">📄 AI Resume Analysis</h3>
+            </div>
+            
+            <form id="candidate-resume-form" style="margin-bottom: 24px;">
+                <p style="font-size: 14px; color: #666; margin-bottom: 12px;">Upload your resume to automatically extract skills, years of experience, and get an ATS match score. Employers will be able to see your ATS score and resume summary.</p>
+                <div class="form-group">
+                    <label>Upload Resume (PDF format)</label>
+                    <input type="file" id="r-resume-file" accept=".pdf" required style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee;">
+                </div>
+                <button type="submit" id="r-upload-btn" class="btn">🚀 Upload & Analyze with AI</button>
+            </form>
+
+            <div id="resume-analysis-result" style="display:none; padding: 20px; border-radius: 12px; background: rgba(142, 45, 226, 0.05); border: 1px solid rgba(142, 45, 226, 0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <h4 style="font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;margin:0;color:var(--purple);">✨ AI Analysis Results</h4>
+                    <span id="ra-score" style="font-weight:900; background:var(--purple); color:white; padding:4px 12px; border-radius:20px; font-size:14px;">Score: 0/100</span>
+                </div>
+                <p style="font-size:14px; margin-bottom:8px;"><strong>Years of Experience:</strong> <span id="ra-exp"></span></p>
+                <p style="font-size:14px; margin-bottom:8px;"><strong>Parsed Skills:</strong> <span id="ra-skills"></span></p>
+                <p style="font-size:14px; margin-bottom:0; line-height:1.5;"><strong>Summary:</strong> <span id="ra-summary"></span></p>
+                
+                <a id="ra-download-btn" href="#" target="_blank" class="btn btn-outline" style="display:block; text-align:center; margin-top:20px; padding:8px; font-size:14px;">⬇️ View Uploaded Resume</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 4a. Candidate Matched Jobs View -->
+<main id="candidate-matched-jobs" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <button class="btn btn-outline" onclick="showSection('candidate-dashboard')" style="margin-bottom: 24px;">&larr; Back to Profile</button>
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:8px;">🎯 My Highly Matched Jobs</h2>
+        <p style="color: #666; margin-bottom: 32px;">Jobs automatically ranked by our algorithm for your exact skill stack.</p>
+        <div id="matched-jobs-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+    </div>
+</main>
+
+<!-- 5. Employer Dashboard -->
+<main id="employer-dashboard" class="view-section">
+    <div class="container">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; margin-bottom:16px;">🏢 Employer Dashboard</h2>
+        
+        <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+            <div class="glass-card" style="flex: 1; text-align: center; padding: 16px;">
+                <h3 style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Jobs Posted</h3>
+                <p id="e-stat-jobs" style="font-size: 28px; font-weight: 900; color: var(--purple); margin: 0;">0</p>
+            </div>
+            <div class="glass-card" style="flex: 1; text-align: center; padding: 16px;">
+                <h3 style="font-size: 14px; color: #666; margin-bottom: 8px;">Total Applicants</h3>
+                <p id="e-stat-applicants" style="font-size: 28px; font-weight: 900; color: var(--purple); margin: 0;">0</p>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div>
+                <div class="glass-card">
+                    <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">Post New Job</h3>
+                    <form id="post-job-form">
+                        <div class="form-group">
+                            <label>Job Title</label>
+                            <input type="text" id="j-title" required placeholder="e.g. Front Desk Executive">
+                        </div>
+                        <div class="form-group">
+                            <label>Required Skills For Rank Matching</label>
+                            <textarea id="j-skills" rows="2" required placeholder="Communication, English, Computer Basic"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Job Site Pincode</label>
+                            <input type="text" id="j-pincode" required placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="j-city" required placeholder="e.g. Lucknow">
+                        </div>
+                        <div class="form-group">
+                            <label>Monthly Salary (₹ INR)</label>
+                            <input type="text" id="j-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="e.g. 15000" required>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="j-walk-in" onchange="document.getElementById('j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
+                            <label for="j-walk-in">🚶 This is a Walk-In job</label>
+                        </div>
+                        <div class="form-group" id="j-walk-in-addr-group" style="display: none;">
+                            <label>Walk-In Address</label>
+                            <textarea id="j-walk-in-address" rows="2" placeholder="e.g. 123, MG Road, Bangalore - 560001"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Job Timer (Auto-Delete)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="j-timer-value" min="0" value="0" style="flex: 1;" placeholder="Amount">
+                                <select id="j-timer-unit" style="flex: 1;">
+                                    <option value="hours">Hours</option>
+                                    <option value="days">Days</option>
+                                    <option value="months">Months</option>
+                                </select>
+                            </div>
+                            <p style="font-size: 11px; color: #999; margin-top: 4px;">Set to 0 for No Timer (Manual Delete).</p>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">🚀 Post Job to Global Feed</button>
+                    </form>
+                </div>
+            </div>
+            <div>
+                <div class="glass-card">
+                    <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px;">My Posted Jobs</h3>
+                    <div id="posted-jobs-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 5.1 Employer Profile Section -->
+<main id="employer-profile-view" class="view-section">
+    <div class="container" style="max-width: 700px;">
+        <h2 style="font-family:'Nunito',sans-serif; font-weight:900; font-size:32px; text-align:center; margin-bottom:24px;">🏢 Company Profile</h2>
+        <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; margin:0;">Company Details</h3>
+                <button id="e-edit-btn" type="button" class="btn btn-outline" style="display:none; padding:8px 16px; font-size:14px;" onclick="toggleEmployerProfileEdit(true)">✏️ Edit Profile</button>
+            </div>
+            <form id="employer-profile-form">
+                <div class="form-group">
+                    <label>Company Name / Store Name</label>
+                    <input type="text" id="e-company" placeholder="e.g. Sunrise Hotel">
+                </div>
+                <div class="form-group">
+                    <label>Company Pincode</label>
+                    <input type="text" id="e-pincode" placeholder="e.g. 226001" pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="e-city" placeholder="e.g. Lucknow">
+                </div>
+                <div class="form-group">
+                    <label>HR Name (Visible only to shortlisted candidates)</label>
+                    <input type="text" id="e-contact-name" placeholder="e.g. John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Contact Number (Visible only to shortlisted candidates)</label>
+                    <input type="text" id="e-contact-phone" placeholder="e.g. 9876543210" pattern="\d{10}" maxlength="10" minlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                </div>
+                <div class="form-group">
+                    <label>HR Email (Visible only to shortlisted candidates)</label>
+                    <input type="email" id="e-contact-email" placeholder="e.g. hr@company.com">
+                </div>
+                <div class="form-group">
+                    <label>About the Company</label>
+                    <textarea id="e-about" rows="3" placeholder="Describe your company, culture, and what makes it a great place to work" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Website / Social Links</label>
+                    <textarea id="e-links" rows="2" placeholder="Company website or social media profiles" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Organization Details</label>
+                    <textarea id="e-org-details" rows="2" placeholder="e.g. Number of employees, type of business, founding year" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; font-family: inherit; font-size: 14px; transition: .2s;"></textarea>
+                </div>
+                <button type="submit" id="e-save-btn" class="btn">💾 Save Profile</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- 6. Ranked Candidates View (Employer Sub-view) -->
+<main id="ranked-candidates" class="view-section">
+    <div class="container" style="max-width: 800px;">
+        <button class="btn btn-outline" onclick="showDashboard()" style="margin-bottom: 24px;">&larr; Back to Dashboard</button>
+        <h3 id="rc-job-title" style="font-family:'Nunito',sans-serif; font-weight:900; font-size:28px; margin-bottom:12px;">Candidates</h3>
+        
+        <div class="tabs" id="employer-candidate-tabs" style="margin-bottom: 24px;">
+            <div class="tab active" id="tab-recommended-candidates" onclick="switchCandidateTab('recommended')" style="flex:1; text-align:center;">⭐ Recommended</div>
+            <div class="tab" id="tab-all-candidates" onclick="switchCandidateTab('all')" style="flex:1; text-align:center;">👥 All Applicants</div>
+        </div>
+
+        <p style="color:#666; margin-bottom:24px;">These candidates are mathematically ranked by match score. You can safely skip reading unmatching CVs entirely!</p>
+        <div id="candidates-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+    </div>
+</main>
+
+<!-- Modals -->
+<div id="edit-job-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:480px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
+        <button onclick="closeEditModal()" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">✏️ Edit Job</h3>
+        <form id="edit-job-form">
+            <div class="form-group">
+                <label>Job Title</label>
+                <input type="text" id="edit-j-title" required>
+            </div>
+            <div class="form-group">
+                <label>Required Skills</label>
+                <textarea id="edit-j-skills" rows="2" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Job Pincode</label>
+                <input type="text" id="edit-j-pincode" required pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" id="edit-j-city" required>
+            </div>
+            <div class="form-group">
+                <label>Monthly Salary (₹ INR)</label>
+                <input type="text" id="edit-j-salary" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="edit-j-walk-in" onchange="document.getElementById('edit-j-walk-in-addr-group').style.display = this.checked ? 'block' : 'none'">
+                <label for="edit-j-walk-in">🚶 Walk-In job</label>
+            </div>
+            <div class="form-group" id="edit-j-walk-in-addr-group" style="display: none;">
+                <label>Walk-In Address</label>
+                <textarea id="edit-j-walk-in-address" rows="2"></textarea>
+            </div>
+            <div class="form-group" id="edit-j-current-expiry-group" style="display: none;">
+                <label style="color: var(--coral);">⏰ Current Expiration</label>
+                <p id="edit-j-current-expiry" style="font-size: 14px; font-weight: 700; color: var(--dark);"></p>
+                <small style="color: #999;">Setting a new timer below will RESET the expiration from now.</small>
+            </div>
+            <div class="form-group">
+                <label>Set New Auto-Delete Timer</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="edit-j-timer-value" min="0" value="0" style="flex: 1;" placeholder="Amount">
+                    <select id="edit-j-timer-unit" style="flex: 1;">
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                        <option value="months">Months</option>
+                    </select>
+                </div>
+                <p style="font-size: 11px; color: #999; margin-top: 4px;">Leave at 0 to keep current (or No Timer).</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:16px; margin-top:32px;">
+                <button type="submit" class="btn" style="width:100%; padding:16px; font-size:17px; box-shadow:0 8px 0 #d94f4f;">✅ Save All Changes</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <button type="button" class="btn btn-outline" style="padding:14px; font-size:14px; border-color:var(--coral); color:var(--coral); font-weight:800;" onclick="deleteJob()">🗑️ Delete Job</button>
+                    <button type="button" class="btn btn-outline" style="padding:14px; font-size:14px; font-weight:800;" onclick="closeEditModal()">❌ Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="ai-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.6); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:80vh; overflow-y:auto; border:none; border-top: 8px solid var(--purple);">
+        <button onclick="document.getElementById('ai-modal').style.display='none'" style="position:absolute; top:20px; right:20px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 id="ai-modal-title" style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:900; font-size:24px; color:var(--dark);">🤖 AI Assistant</h3>
+        <div id="ai-modal-content">
+            <div style="text-align:center; padding: 2rem;">
+                <div style="display:inline-block; border: 4px solid #f0f0f8; border-top: 4px solid var(--purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 1rem; color: #666; font-weight:700;">Wait for a moment...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="company-profile-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
+        <button onclick="document.getElementById('company-profile-modal').style.display='none'" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">🏢 Company Profile</h3>
+        <div id="company-profile-content">
+        </div>
+    </div>
+</div>
+
+<div id="candidate-profile-modal" style="display:none; position:fixed; inset:0; background:rgba(26,26,46,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div class="glass-card" style="width:100%; max-width:600px; position:relative; margin: 1rem; max-height:90vh; overflow-y:auto; border:none;">
+        <button onclick="document.getElementById('candidate-profile-modal').style.display='none'" style="position:absolute; top:24px; right:24px; background:#f0f0f8; border:none; width:36px; height:36px; border-radius:50%; color:#666; font-size:20px; cursor:pointer; line-height:1;">&times;</button>
+        <h3 style="margin-bottom:24px; font-family:'Nunito',sans-serif; font-weight:800; font-size:24px; color:var(--dark);">👨‍🔧 Candidate Profile</h3>
+        <div id="candidate-profile-content">
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/index.js' %}"></script>
+</body>
+</html>
