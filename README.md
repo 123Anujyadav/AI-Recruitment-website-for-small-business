@@ -263,10 +263,6 @@ Match Score = (matched_skills / total_required_skills) × 70  +  location_bonus 
 
 ---
 
-## 👨‍🔧 Author
-
-### [**Aditya Paswan 😎**](https://github.com/adityapaswan568)
-
 ---
 
 ## 🤝 Contributing
